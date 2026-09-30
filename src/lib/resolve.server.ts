@@ -54,8 +54,10 @@ export async function resolveLink(id: string): Promise<ResolvedLink | null> {
     // Meta espera número no evento. Valor ausente continua ausente.
     valueEur: typeof rawValue === "number" && Number.isFinite(rawValue) ? rawValue : null,
     gate: {
-      // O `=== true` é o que mantém links antigos sem gate funcionando: coluna
-      // ausente ou null vira false, e a página segue sendo a âncora direta.
+      // Normalização defensiva: o PostgREST devolve boolean como boolean, mas
+      // um null ou coluna ausente também pode chegar aqui e não pode virar
+      // "gate ligado" por acidente. Todo campo ligado tem que ser true de
+      // verdade, e o padrão de ligar é decisão do creator, não deste código.
       showLogo: row.show_logo === true,
       collectName: row.collect_name === true,
       collectEmail: row.collect_email === true,
