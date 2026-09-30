@@ -31,6 +31,12 @@ export type RedirectPageData = {
    * não poder mentir sobre o que o visitante vai ver.
    */
   preview?: boolean;
+  /**
+   * Recusa do servidor a ser mostrada no topo do formulário. Só aparece quando
+   * o POST volta sem redirect, e o texto é fixo aqui: a validação é do banco e
+   * este arquivo não recebe motivo do Postgres para virar HTML.
+   */
+  error?: string | null;
 };
 
 /**
@@ -111,9 +117,11 @@ function pixelValueArgs(valueEur: number | null): string {
  * O `sendBeacon` vai antes do `fbq` de propósito: ele sobrevive à saída da
  * página, que é o que acontece a seguir. O clique não espera nenhum dos dois.
  *
- * Com o gate ligado, o Purchase dispara no `submit` do formulário em vez do
- * `click` da âncora. É o mesmo instante: o visitante decide entrar empurrando o
- * botão, e é ali que a conversão acontece.
+ * Com o gate ligado, quem manda o sinal de servidor é o próprio POST do
+ * formulário, porque ele já chega aqui de qualquer jeito — inclusive sem
+ * JavaScript. Se os dois mandassem, seria o mesmo `event_id` duas vezes. Com o
+ * gate, então, este script cuida só do `fbq`, que é o que o navegador tem e o
+ * servidor não.
  */
 function renderConversionScript(input: {
   pixelId: string;
@@ -125,6 +133,13 @@ function renderConversionScript(input: {
   const eventId = jsString(input.eventId);
   const trackUrl = jsString(input.trackUrl);
   const pixelId = jsString(input.pixelId);
+
+  const beacon = input.gate
+    ? ""
+    : `  var body=new Blob([JSON.stringify({eventId:${eventId}})],{type:'application/json'});
+  if(navigator.sendBeacon){navigator.sendBeacon(${trackUrl},body);}
+  else{fetch(${trackUrl},{method:'POST',body:body,keepalive:true,headers:{'Content-Type':'application/json'}}).catch(function(){});}
+`;
 
   return `<script>
 (function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -138,10 +153,7 @@ fbq('init',${pixelId});
  if(!c||c.dataset.conversionSent)return;
  c.dataset.conversionSent='1';
  var send=function(){
-  var body=new Blob([JSON.stringify({eventId:${eventId}})],{type:'application/json'});
-  if(navigator.sendBeacon){navigator.sendBeacon(${trackUrl},body);}
-  else{fetch(${trackUrl},{method:'POST',body:body,keepalive:true,headers:{'Content-Type':'application/json'}}).catch(function(){});}
-  fbq('track','Purchase'${pixelValueArgs(input.valueEur)},{eventID:${eventId}});
+${beacon}  fbq('track','Purchase'${pixelValueArgs(input.valueEur)},{eventID:${eventId}});
  };
  ${input.gate ? "c.form.addEventListener('submit',send);" : "c.addEventListener('click',send);"}
 })();
@@ -191,6 +203,7 @@ function renderGateForm(data: {
   collectPhone: boolean;
   privacyNote: string;
   preview: boolean;
+  error: string | null;
 }): string {
   const fields: string[] = [];
 
@@ -236,6 +249,7 @@ function renderGateForm(data: {
 
   return `<form class="gate" method="post" action="/go/${escapeAttribute(data.linkId)}"${data.preview ? ' data-preview="1"' : ""}>
 <input type="hidden" name="eventId" value="${escapeAttribute(data.eventId)}">
+${data.error ? `<p class="form-error" role="alert">${escapeHtml(data.error)}</p>` : ""}
 ${fields.join("\n")}
 <label class="consent">
 <input type="checkbox" name="consent" value="1" required>
@@ -299,6 +313,11 @@ body{
 @keyframes pulse{from{opacity:.55;transform:scale(.9)}70%{opacity:0;transform:scale(1.5)}100%{opacity:0;transform:scale(1.5)}}
 @media (prefers-reduced-motion:reduce){.mark::after{animation-duration:.01ms}}
 .gate{margin-top:24px;text-align:left}
+.form-error{
+  margin:0 0 16px;padding:11px 14px;border-radius:11px;
+  font-size:.8125rem;line-height:1.5;color:#fecaca;
+  background:rgba(220,38,38,.13);border:1px solid rgba(220,38,38,.35);
+}
 .field{display:block;margin-bottom:14px}
 .label{display:block;margin-bottom:6px;font-size:.8125rem;font-weight:500;color:#c3cbdb}
 .input{
@@ -370,6 +389,7 @@ export function renderRedirectPage(data: RedirectPageData): string {
         collectPhone: data.collectPhone === true,
         privacyNote,
         preview,
+        error: data.error ?? null,
       })
     : "";
 

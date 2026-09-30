@@ -4,8 +4,23 @@ import { getRequestHeader, getRequestIP } from "@tanstack/react-start/server";
 import { siteUrl } from "@/lib/env";
 import { UUID_RE } from "@/lib/links";
 
-/** Teto do corpo do POST. O corpo legítimo tem uns 60 bytes. */
-const MAX_BODY_BYTES = 512;
+/**
+ * Teto do corpo do POST.
+ *
+ * O beacon manda `{"eventId":"<uuid>"}`, uns 60 bytes. O formulário de gate
+ * manda nome, e-mail, telefone, consentimento e o id: com nomes e e-mails do
+ * tamanho real, dá na casa das 400. 1 KiB dá folga para texto normal e ainda
+ * mantém o custo de um abuse baixo — esta rota é pública e sem autenticação,
+ * então `request.text()` sem limite deixa qualquer um mandar megabytes e fazer
+ * o servidor buffering em memória.
+ */
+const MAX_BODY_BYTES = 1024;
+
+/** Teto por campo, para ninguém guardar uma redação dentro do banco. */
+const MAX_FIELD_CHARS = { name: 120, email: 254, phone: 32 } as const;
+
+const GATE_REFUSED =
+  "Não foi possível liberar o acesso. Confira os dados e o aceite do termos e tente de novo.";
 
 export const Route = createFileRoute("/go/$id")({
   server: {
