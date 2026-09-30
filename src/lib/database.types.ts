@@ -75,6 +75,51 @@ export type Database = {
           },
         ];
       };
+      gate_submissions: {
+        Row: {
+          id: string;
+          link_id: string;
+          model_id: string;
+          /** PII cifrada. Só sai do banco por `list_submissions`, para o dono. */
+          name_encrypted: string | null;
+          email_encrypted: string | null;
+          phone_encrypted: string | null;
+          /** SHA-256, para casar com a Meta sem mandar o valor em claro. */
+          email_hash: string | null;
+          phone_hash: string | null;
+          first_name_hash: string | null;
+          last_name_hash: string | null;
+          event_id: string | null;
+          /** Quando o visitante marcou o aceite. A linha só existe se marcou. */
+          consented_at: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          link_id: string;
+          model_id: string;
+          name_encrypted?: string | null;
+          email_encrypted?: string | null;
+          phone_encrypted?: string | null;
+          email_hash?: string | null;
+          phone_hash?: string | null;
+          first_name_hash?: string | null;
+          last_name_hash?: string | null;
+          event_id?: string | null;
+          consented_at?: string;
+          created_at?: string;
+        };
+        Update: Record<never, never>;
+        Relationships: [
+          {
+            foreignKeyName: "gate_submissions_link_id_fkey";
+            columns: ["link_id"];
+            isOneToOne: false;
+            referencedRelation: "delivery_links";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       models: {
         Row: {
           id: string;
@@ -219,11 +264,9 @@ export type Database = {
         Args: { p_link_id: string };
         Returns: {
           id: string;
-          link_id: string;
           name: string | null;
           email: string | null;
           phone: string | null;
-          consented: boolean;
           created_at: string;
         }[];
       };
