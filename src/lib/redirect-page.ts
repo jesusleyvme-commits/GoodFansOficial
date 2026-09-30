@@ -13,7 +13,46 @@ export type RedirectPageData = {
    * servidor — e é isso que faz a Meta contar uma conversão só, em vez de duas.
    */
   eventId: string;
+
+  // --- Gate de coleta -----------------------------------------------------
+  // Todos opcionais. Sem nenhum campo ligado, a página segue sendo a âncora
+  // direta de antes: mais rápida, e é o que o /go já fazia.
+  showLogo?: boolean;
+  collectName?: boolean;
+  collectEmail?: boolean;
+  collectPhone?: boolean;
+  /** Null usa o padrão do app. Texto do creator tem precedência sobre o padrão. */
+  headline?: string | null;
+  subhead?: string | null;
+  privacyNote?: string | null;
+  /**
+   * Pré-visualização do painel. Renderiza o mesmo HTML, mas sem destino no
+   * formulário, sem gravação e com uma tarja avisando. Existe para o preview
+   * não poder mentir sobre o que o visitante vai ver.
+   */
+  preview?: boolean;
 };
+
+/**
+ * Texto padrão de privacidade.
+ *
+ * Diz o que é coletado, para que, que a conexão é cifrada e como pedir a
+ * exclusão. Deliberadamente sem "100% protegido pela lei" e afins: isso não é
+ * um fato verificável sobre o produto, é afirmação de conformidade que depende
+ * de operação, retenção e canal de atendimento — e affirmá-la na tela de um
+ * consumidor é o tipo de Publicidade enganosa que o CDC art. 37 pune. O texto é
+ * editável no painel, e a revisão final é do creator.
+ */
+export const DEFAULT_PRIVACY_NOTE =
+  "Precisamos do seu nome, e-mail e telefone para liberar este acesso. " +
+  "Usamos esses dados apenas para entregar o conteúdo e, se você permitir, " +
+  "para receber novidades sobre ele. A conexão é criptografada e os dados ficam " +
+  "guardados de forma cifrada. Não vendemos seus dados. Para pedir a exclusão " +
+  "do que coletamos, responda a esta mensagem.";
+
+const DEFAULT_HEADLINE = "Seu acesso está liberado";
+const DEFAULT_SUBHEAD = "Clique abaixo para entrar.";
+
 
 const ESCAPES: Record<string, string> = {
   "&": "&amp;",
