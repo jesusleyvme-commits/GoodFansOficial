@@ -373,7 +373,11 @@ export function renderRedirectPage(data: RedirectPageData): string {
       })
     : "";
 
-  const conversion = pixelId
+  // No preview o pixel é cortado de propósito. Se o creator abrir a
+  // pré-visualização de um link que já tem pixel e ele disparasse, entraria uma
+  // conversão real no relatório do anúncio — de um clique que foi só olhar a
+  // tela, e para um link que talvez nem exista mais.
+  const conversion = pixelId && !preview
     ? renderConversionScript({
         pixelId,
         valueEur: data.valueEur,
