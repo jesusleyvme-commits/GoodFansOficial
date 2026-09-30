@@ -1,7 +1,9 @@
 import { supabase } from "@/lib/supabase";
 import { readError } from "@/lib/links-api";
+import { supabaseUrl } from "@/lib/env";
+import { AVATAR_BUCKET, publicAvatarUrl } from "@/lib/avatar-path";
 
-export const AVATAR_BUCKET = "avatars";
+export { AVATAR_BUCKET };
 const AVATAR_MAX_BYTES = 2 * 1024 * 1024;
 
 const EXTENSIONS: Record<string, string> = {
@@ -26,8 +28,7 @@ function buildPath(ownerId: string, fileName: string, file: File): string {
 
 /** Caminho guardado no banco, para ser reaproveitado quando não há upload novo. */
 export function avatarUrl(path: string | null | undefined): string | null {
-  if (!path) return null;
-  return supabase().storage.from(AVATAR_BUCKET).getPublicUrl(path).data.publicUrl;
+  return publicAvatarUrl(supabaseUrl(), path);
 }
 
 export async function uploadAvatar(ownerId: string, fileName: string, file: File): Promise<string> {

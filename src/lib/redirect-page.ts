@@ -17,7 +17,6 @@ export type RedirectPageData = {
   // --- Gate de coleta -----------------------------------------------------
   // Todos opcionais. Sem nenhum campo ligado, a página segue sendo a âncora
   // direta de antes: mais rápida, e é o que o /go já fazia.
-  showLogo?: boolean;
   collectName?: boolean;
   collectEmail?: boolean;
   collectPhone?: boolean;
@@ -25,6 +24,13 @@ export type RedirectPageData = {
   headline?: string | null;
   subhead?: string | null;
   privacyNote?: string | null;
+  /**
+   * Foto da modelo, já como URL absoluta do bucket público. Entra no cabeçalho,
+   * no lugar da marca do site: quem chega pelo anúncio quer saber de quem é o
+   * conteúdo antes de digitar o e-mail. Ausente, o cabeçalho some e o texto
+   * começa pelo nome do produto.
+   */
+  photoUrl?: string | null;
   /**
    * Pré-visualização do painel. Renderiza o mesmo HTML, mas sem destino no
    * formulário, sem gravação e com uma tarja avisando. Existe para o preview
@@ -42,22 +48,30 @@ export type RedirectPageData = {
 /**
  * Texto padrão de privacidade.
  *
- * Diz o que é coletado, para que, que a conexão é cifrada e como pedir a
- * exclusão. Deliberadamente sem "100% protegido pela lei" e afins: isso não é
- * um fato verificável sobre o produto, é afirmação de conformidade que depende
- * de operação, retenção e canal de atendimento — e affirmá-la na tela de um
- * consumidor é o tipo de Publicidade enganosa que o CDC art. 37 pune. O texto é
- * editável no painel, e a revisão final é do creator.
+ * Diz a finalidade, o reassure e o fato concreto de proteção: cifrado no banco,
+ * visível só para quem criou o link, sem venda nem compartilhamento, e como
+ * pedir a exclusão.
+ *
+ * Deliberadamente sem "100% sigilo", "protegido pela lei" ou "garantido": nada
+ * aqui é verificável. A infraestrutura é de terceiro, quem cria o link é uma
+ * pessoa e não uma política, e uma ordem judicial obriga a entregar dado
+ * guardado. Afirmir o absoluto na tela de um consumidor é publicidade enganosa
+ * (CDC art. 37) e omissão de informação (LGPD art. 9) — e o pior efeito é
+ * prático: quem lê "100% seguro" para de conferir o cadeado de verdade.
+ *
+ * Especificidade vende mais. "Guardado cifrado" é checável; "100% sigilo"
+ * ninguém acredita. O texto é editável no painel, e a revisão final é do creator.
  */
 export const DEFAULT_PRIVACY_NOTE =
-  "Precisamos do seu nome, e-mail e telefone para liberar este acesso. " +
-  "Usamos esses dados apenas para entregar o conteúdo e, se você permitir, " +
-  "para receber novidades sobre ele. A conexão é criptografada e os dados ficam " +
-  "guardados de forma cifrada. Não vendemos seus dados. Para pedir a exclusão " +
-  "do que coletamos, responda a esta mensagem.";
+  "Precisamos destes dados só para liberar seu acesso e confirmar que você é uma pessoa real. " +
+  "A conexão é criptografada e os dados ficam guardados cifrados no banco. " +
+  "Só quem criou o link consegue lê-los, pelo próprio painel. " +
+  "Não vendemos seus dados nem os compartilhamos com terceiros. " +
+  "Para pedir a exclusão do que coletamos, responda a esta mensagem.";
 
-export const DEFAULT_HEADLINE = "Seu acesso está liberado";
-export const DEFAULT_SUBHEAD = "Clique abaixo para entrar.";
+export const DEFAULT_HEADLINE = "Clique abaixo para entrar";
+const DEFAULT_GATE_HEADLINE = "Preencha para liberar o acesso";
+const DEFAULT_GATE_SUBHEAD = "Pode preencher sem preocupação.";
 
 const ESCAPES: Record<string, string> = {
   "&": "&amp;",
