@@ -120,6 +120,29 @@ export type Database = {
           },
         ];
       };
+      payout_details: {
+        Row: {
+          user_id: string;
+          /** Cifrados. Sem privilégio de SELECT: só as RPCs abaixo. */
+          holder_name_encrypted: string | null;
+          iban_encrypted: string | null;
+          pix_key_encrypted: string | null;
+          mbway_phone_encrypted: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Record<never, never>;
+        Update: Record<never, never>;
+        Relationships: [
+          {
+            foreignKeyName: "payout_details_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: true;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       models: {
         Row: {
           id: string;
@@ -310,6 +333,30 @@ export type Database = {
           p_source_url: string | null;
         };
         Returns: boolean;
+      };
+      /**
+       * Grava IBAN, chave PIX e telefone MBway cifrados. Campo vazio limpa, e o
+       * banco recusa formato inválido antes de gravar.
+       */
+      save_payout_details: {
+        Args: {
+          p_holder_name?: string | null;
+          p_iban?: string | null;
+          p_pix_key?: string | null;
+          p_mbway_phone?: string | null;
+        };
+        Returns: boolean;
+      };
+      /** Lê os dados de recebimento em claro, só da própria linha. */
+      reveal_payout_details: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          holder_name: string | null;
+          iban: string | null;
+          pix_key: string | null;
+          mbway_phone: string | null;
+          updated_at: string;
+        }[];
       };
       /**
        * Conversões, envios à Meta e coletas por link. Só do creator: a posse é
