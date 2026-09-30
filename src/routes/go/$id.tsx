@@ -145,31 +145,19 @@ export const Route = createFileRoute("/go/$id")({
         // server-only é importado dinamicamente de dentro do handler.
         const { renderRedirectPage, renderUnavailablePage } = await import("@/lib/redirect-page");
 
-        const html = (body: string, status: number) =>
-          new Response(body, {
-            status,
-            headers: {
-              "content-type": "text/html; charset=utf-8",
-              // O evento Purchase precisa disparar a cada visita, então este
-              // documento nunca pode vir de cache compartilhado nem do navegador.
-              "cache-control": "no-store, no-cache, must-revalidate, private",
-              "x-robots-tag": "noindex, nofollow",
-            },
-          });
-
         // Rejeitar ids malformados aqui mantém lixo longe do PostgREST.
         if (!UUID_RE.test(params.id)) {
-          return html(renderUnavailablePage(), 404);
+          return htmlResponse(renderUnavailablePage(), 404);
         }
 
         const { resolveLink } = await import("@/lib/resolve.server");
         const link = await resolveLink(params.id);
 
         if (!link) {
-          return html(renderUnavailablePage(), 404);
+          return htmlResponse(renderUnavailablePage(), 404);
         }
 
-        return html(
+        return htmlResponse(
           renderRedirectPage({
             destination: link.destinationUrl,
             pixelId: link.pixelId,
@@ -178,14 +166,27 @@ export const Route = createFileRoute("/go/$id")({
             linkId: params.id,
             // Um id por visita, usado nos dois sinais para a Meta deduplicar.
             eventId: crypto.randomUUID(),
+            showLogo: link.gate.showLogo,
+            collectName: link.gate.collectName,
+            collectEmail: link.gate.collectEmail,
+            collectPhone: link.gate.collectPhone,
+            headline: link.gate.headline,
+            subhead: link.gate.subhead,
+            privacyNote: link.gate.privacyNote,
           }),
           200,
         );
       },
 
-      // Clique em "Entrar agora". O navegador manda o mesmo event_id que já
-      // está no `fbq`, e quem chama a Meta é o banco — o token da conta de
-      // anúncios nunca chega a este processo.
+      // Duas coisas chegam aqui, e o content-type diz qual é:
+      //
+      // 1. form-urlencoded — o gate. Alguém preencheu os dados e quer entrar.
+      //    Grava a coleta e responde 303 para o destino.
+      // 2. JSON — o clique. Só registra a conversão, sem nada mais.
+      //
+      // A conversão do gate é feita dentro do POST do formulário, e não por
+      // beacon: o formulário chega aqui mesmo sem JavaScript, e é esse o sinal
+      // que não pode se perder.
       POST: async ({ params, request }) => {
         const noContent = () =>
           new Response(null, {
@@ -195,21 +196,22 @@ export const Route = createFileRoute("/go/$id")({
 
         if (!UUID_RE.test(params.id)) return noContent();
 
-        // O corpo legítimo é `{"eventId":"<uuid>"}`, uns 60 bytes. Esta rota é
-        // pública e sem autenticação, então `request.text()` sem limite deixa
-        // qualquer um mandar megabytes e fazer o servidor buffering em memória.
         // O `content-length` cobre o caso comum; a checagem depois do `text()`
         // cobre corpo sem o header, ainda que o buffer já tenha sido feito.
         const declared = Number(request.headers.get("content-length") ?? 0);
         if (Number.isFinite(declared) && declared > MAX_BODY_BYTES) return noContent();
 
+        const raw = await request.text().catch(() => "");
+        if (raw.length > MAX_BODY_BYTES) return noContent();
+
+        if ((request.headers.get("content-type") ?? "").startsWith("application/x-www-form-urlencoded")) {
+          return submitGateForm(params.id, raw);
+        }
+
         // O id vem da própria página renderizada, mas é conferido mesmo assim:
         // esta rota é pública e o corpo é controlado por quem chama.
         let eventId = "";
         try {
-          const raw = await request.text();
-          if (raw.length > MAX_BODY_BYTES) return noContent();
-
           const body = JSON.parse(raw) as { eventId?: unknown };
           if (typeof body.eventId === "string" && UUID_RE.test(body.eventId)) {
             eventId = body.eventId;
