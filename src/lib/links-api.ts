@@ -14,7 +14,8 @@ export function readError(error: { message: string; code?: string } | null): str
 }
 
 const LINK_SELECT =
-  "id, creator_id, model_id, product_name, destination_url, value_eur, created_at";
+  "id, creator_id, model_id, product_name, destination_url, value_eur, created_at, " +
+  "show_logo, collect_name, collect_email, collect_phone, gate_headline, gate_subhead, privacy_note";
 
 export async function listLinksByModel(modelId: string): Promise<DeliveryLink[]> {
   const { data, error } = await supabase()
@@ -87,6 +88,57 @@ export async function updateLink(id: string, input: EditLinkInput): Promise<Deli
   if (error) throw new Error(readError(error));
   return data;
 }
+export type GateSettingsInput = {
+  showLogo: boolean;
+  collectName: boolean;
+  collectEmail: boolean;
+  collectPhone: boolean;
+  /** null usa o texto padrão do app. */
+  headline?: string | null;
+  subhead?: string | null;
+  privacyNote?: string | null;
+};
+
+/**
+ * Ajusta o gate do link.
+ *
+ * Vai pela função `update_link_gate` e não por `update`, porque a checagem de
+ * posse é feita no banco com auth.uid() ali dentro. Confiar no RLS da tabela
+ * deixaria a decisão de autorização em dois lugares.
+ */
+export async function updateLinkGate(id: string, input: GateSettingsInput): Promise<DeliveryLink> {
+  await requireUserId();
+
+  const clean = (value: string | null | undefined) => {
+    const trimmed = value?.trim();
+    // Vazio é o jeito de o creator voltar ao texto padrão do app. Enviando ""
+    // o banco gravaria string vazia e a página ficaria sem título.
+    return trimmed ? trimmed : null;
+  };
+
+  const { error } = await supabase().rpc("update_link_gate", {
+    p_link_id: id,
+    p_show_logo: input.showLogo,
+    p_collect_name: input.collectName,
+    p_collect_email: input.collectEmail,
+    p_collect_phone: input.collectPhone,
+    p_headline: clean(input.headline),
+    p_subhead: clean(input.subhead),
+    p_privacy_note: clean(input.privacyNote),
+  });
+
+  if (error) throw new Error(readError(error));
+
+  const { data, error: readErrorBack } = await supabase()
+    .from("delivery_links")
+    .select(LINK_SELECT)
+    .eq("id", id)
+    .single();
+
+  if (readErrorBack) throw new Error(readError(readErrorBack));
+  return data;
+}
+
 export async function deleteLink(id: string): Promise<void> {
   const { error } = await supabase().from("delivery_links").delete().eq("id", id);
 
