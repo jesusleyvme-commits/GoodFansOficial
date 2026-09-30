@@ -1,12 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, Check, Copy, Link2, Plus, SlidersHorizontal, Trash2 } from "lucide-react";
+import { ArrowLeft, Check, Copy, Link2, Plus, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 
 import { Button } from "@/components/button";
 import { DeleteByName } from "@/components/delete-by-name";
 import { Card, CardDescription, CardHeader, CardTitle, Label } from "@/components/card";
 import { Feedback } from "@/components/feedback";
-import { GateSettingsForm } from "@/components/gate-settings-form";
 import { Input } from "@/components/input";
 import { EditLinkButton, LinkEditor } from "@/components/link-editor";
 import { MetaTestButton } from "@/components/meta-test-button";
