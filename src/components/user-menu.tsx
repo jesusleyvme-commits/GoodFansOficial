@@ -5,6 +5,7 @@ import { ChevronDown, LogOut, Settings2, ShieldCheck } from "lucide-react";
 import { avatarUrl } from "@/lib/avatars";
 import { personLabel } from "@/lib/person-label";
 import { supabase } from "@/lib/supabase";
+import { cn } from "@/lib/utils";
 
 type UserMenuProps = {
   email: string;
@@ -14,6 +15,10 @@ type UserMenuProps = {
   avatarPath: string | null;
   /** Só o administrador vê a área de pessoas. O banco confere de novo. */
   isAdmin?: boolean;
+  /** Ajustes do gatilho, para caber no rodapé do menu lateral. */
+  className?: string;
+  /** De que lado o menu abre em relação ao botão. */
+  align?: "start" | "end";
 };
 
 const ITEM_CLASS =
@@ -29,6 +34,8 @@ export function UserMenu({
   displayName,
   avatarPath,
   isAdmin = false,
+  className,
+  align = "end",
 }: UserMenuProps) {
   const navigate = useNavigate();
   const label = personLabel({ display_name: displayName, username, email });
@@ -39,7 +46,10 @@ export function UserMenu({
       <DropdownMenu.Trigger asChild>
         <button
           type="button"
-          className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-input border border-white/10 bg-white/[0.04] pl-2 pr-2.5 text-sm font-medium transition-colors hover:bg-white/[0.08] focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:outline-none"
+          className={cn(
+            "inline-flex h-10 cursor-pointer items-center gap-2 rounded-input border border-white/10 bg-white/[0.04] pl-2 pr-2.5 text-sm font-medium transition-colors hover:bg-white/[0.08] focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:outline-none",
+            className,
+          )}
           aria-label="Menu do usuário"
         >
           {photo ? (
@@ -61,7 +71,7 @@ export function UserMenu({
 
       <DropdownMenu.Portal>
         <DropdownMenu.Content
-          align="end"
+          align={align}
           sideOffset={8}
           className="z-50 min-w-[13rem] animate-fade-in-scale rounded-card border border-white/10 bg-[#12121a] p-1.5 shadow-soft"
         >

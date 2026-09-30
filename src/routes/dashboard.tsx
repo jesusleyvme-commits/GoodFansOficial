@@ -2,9 +2,9 @@ import { Outlet, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Hourglass, UserX } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
+import { AppSidebar, SidebarToggle } from "@/components/app-sidebar";
 import { Logo } from "@/components/logo";
 import { Spinner } from "@/components/spinner";
-import { UserMenu } from "@/components/user-menu";
 import type { Profile } from "@/lib/database.types";
 import { getProfile } from "@/lib/profile-api";
 import { isWaitingForApproval } from "@/lib/person-label";
@@ -23,6 +23,7 @@ function DashboardLayout() {
   const [ready, setReady] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [profileLoaded, setProfileLoaded] = useState(false);
+  const [menuAberto, setMenuAberto] = useState(false);
 
   useEffect(() => {
     void hydrateAuth().then(() => setReady(true));
@@ -68,18 +69,21 @@ function DashboardLayout() {
   return (
     <div className="min-h-dvh bg-gradient-brand-soft">
       <header className="sticky top-0 z-30 border-b border-white/[0.06] bg-gradient-brand-soft/90 backdrop-blur-md">
-        <div className="mx-auto flex h-16 w-full max-w-5xl items-center justify-between gap-4 px-4 sm:px-6">
+        <div className="mx-auto flex h-16 w-full max-w-5xl items-center gap-3 px-4 sm:px-6">
+          <SidebarToggle open={menuAberto} onOpenChange={setMenuAberto} />
           <Logo />
-
-          <UserMenu
-            email={session.user.email ?? ""}
-            username={profile?.username ?? null}
-            displayName={profile?.display_name ?? null}
-            avatarPath={profile?.avatar_path ?? null}
-            isAdmin={profile?.is_admin ?? false}
-          />
         </div>
       </header>
+
+      <AppSidebar
+        open={menuAberto}
+        onOpenChange={setMenuAberto}
+        email={session.user.email ?? ""}
+        username={profile?.username ?? null}
+        displayName={profile?.display_name ?? null}
+        avatarPath={profile?.avatar_path ?? null}
+        isAdmin={profile?.is_admin ?? false}
+      />
 
       <main className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6 sm:py-10">
         {rejected ? (
