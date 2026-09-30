@@ -22,6 +22,121 @@ const MAX_FIELD_CHARS = { name: 120, email: 254, phone: 32 } as const;
 const GATE_REFUSED =
   "Não foi possível liberar o acesso. Confira os dados e o aceite do termos e tente de novo.";
 
+function htmlResponse(body: string, status: number): Response {
+  return new Response(body, {
+    status,
+    headers: {
+      "content-type": "text/html; charset=utf-8",
+      // O evento Purchase precisa disparar a cada visita, então este
+      // documento nunca pode vir de cache compartilhado nem do navegador.
+      "cache-control": "no-store, no-cache, must-revalidate, private",
+      "x-robots-tag": "noindex, nofollow",
+    },
+  });
+}
+
+function readField(form: URLSearchParams, name: keyof typeof MAX_FIELD_CHARS): string {
+  const value = (form.get(name) ?? "").trim();
+  // Campo estourado vira vazio, e o banco recusa o vazio. Melhor recusar do que
+  // truncar: quem digitou 400 letras não queria as 120 primeiras.
+  return value.length > MAX_FIELD_CHARS[name] ? "" : value;
+}
+
+/**
+ * Coleta do gate. Grava o que o link pede e só então libera o acesso.
+ *
+ * A ordem importa: `track_delivery_conversion` procura a coleta pelo
+ * `event_id` para hashear o contato, então enviar a conversão antes da gravação
+ * mandaria um evento sem `em`/`ph` e o `fn`/`ln` ficariam de fora.
+ */
+async function submitGateForm(linkId: string, raw: string): Promise<Response> {
+  // Módulos de rota vão para o bundle do cliente, então tudo server-only entra
+  // por import dinâmico.
+  const { renderRedirectPage, renderUnavailablePage } = await import("@/lib/redirect-page");
+  const { resolveLink } = await import("@/lib/resolve.server");
+
+  const link = await resolveLink(linkId);
+  if (!link) return htmlResponse(renderUnavailablePage(), 404);
+
+  const form = new URLSearchParams(raw);
+
+  // Recusa com a mesma tela e um aviso genérico. O motivo da recusa vem do
+  // banco e não entra no HTML: um "e-mail inválido" confirmeria o que o
+  // formulário já tem, e um erro de banco não deve ser traduzido para o
+  // visitante. O creator descobre o que houve na lista de coletas.
+  const refused = () =>
+    htmlResponse(
+      renderRedirectPage({
+        destination: link.destinationUrl,
+        pixelId: link.pixelId,
+        productName: link.productName,
+        valueEur: link.valueEur,
+        linkId,
+        // Um id novo: o anterior já foi recusado e não pode virar evento.
+        eventId: crypto.randomUUID(),
+        error: GATE_REFUSED,
+        ...link.gate,
+      }),
+      422,
+    );
+
+  const eventId = form.get("eventId") ?? "";
+  if (!UUID_RE.test(eventId)) return refused();
+
+  try {
+    const { anonClient } = await import("@/lib/anon-client.server");
+
+    const { data: saved, error } = await anonClient().rpc("submit_gate", {
+      p_link_id: linkId,
+      // Só o que o link pede. Campo desligado não chega ao banco, mesmo que
+      // alguém acrescente o campo ao POST na mão.
+      p_name: link.gate.collectName ? readField(form, "name") : null,
+      p_email: link.gate.collectEmail ? readField(form, "email") : null,
+      p_phone: link.gate.collectPhone ? readField(form, "phone") : null,
+      p_event_id: eventId,
+      // O navegador já exige o checkbox por `required`. Isto cobre quem desliga
+      // o JavaScript ou monta o POST na mão: sem marcação, não há consentimento,
+      // e consentimento é o que autoriza a gravação.
+      p_consent: form.get("consent") === "1",
+    });
+
+    if (error) {
+      console.error(`[go] submit_gate falhou: ${error.message}`);
+      return refused();
+    }
+    if (saved !== true) return refused();
+  } catch (error) {
+    console.error("[go] submit_gate lançou:", error);
+    return refused();
+  }
+
+  // Melhor esforço, depois de gravar. Falhar aqui não pode virar erro na tela de
+  // quem acabou de liberar o acesso.
+  try {
+    const { trackDeliveryConversion } = await import("@/lib/meta-conversion.server");
+    await trackDeliveryConversion({
+      linkId,
+      eventId,
+      clientIp: getRequestIP({ xForwardedFor: true }),
+      userAgent: getRequestHeader("user-agent"),
+      sourceUrl: new URL(`/go/${linkId}`, `${siteUrl()}/`).href,
+    });
+  } catch (error) {
+    console.error("[go] registro da conversão falhou:", error);
+  }
+
+  // 303 e não 302: o visitante veio por POST e a resposta precisa ser lida com
+  // GET, senão o destino herda o método e pode rejeitar o envio.
+  return new Response(null, {
+    status: 303,
+    headers: {
+      location: link.destinationUrl,
+      "cache-control": "no-store, no-cache, must-revalidate, private",
+      "x-robots-tag": "noindex, nofollow",
+    },
+  });
+}
+
 export const Route = createFileRoute("/go/$id")({
   server: {
     handlers: {
