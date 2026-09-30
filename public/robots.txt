@@ -1,0 +1,8 @@
+# Nada aqui é para busca. O produto é um painel privado e páginas de entrega
+# que só fazem sentido para quem já tem o link.
+#
+# As páginas /go/ também carregam <meta name="robots" content="noindex,nofollow">
+# e o header X-Robots-Tag. O noindex manda mais que o Disallow — quem obedece o
+# Disallow não chega para ver a tag. Os dois juntos é que fecha.
+User-agent: *
+Disallow: /

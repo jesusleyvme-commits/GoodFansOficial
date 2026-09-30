@@ -1,0 +1,8 @@
+# Normaliza as quebras de linha no repositório, sem mexe no que está em disco.
+# Sem isto, o git avisa "LF will be replaced by CRLF" em quase todo arquivo e
+# cada `git add` vira um diff falso de linhas inteiras.
+* text=auto eol=lf
+
+# Arquivos gerados: o conteúdo é gerado, o diff não serve para nada.
+*.svg text eol=lf
+*.lock text eol=lf
