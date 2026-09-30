@@ -149,6 +149,103 @@ fbq('init',${pixelId});
 }
 
 
+const CONSENT_LABEL =
+  "Autorizo o uso dos meus dados para liberar este acesso e receber novidades sobre o conteúdo.";
+
+/**
+ * Campos do gate. `required` em todos os que estão ligados: o creator liga um
+ * campo para collectar, não para sugerir.
+ *
+ * O `autocomplete` não é enfeite. Em celular ele abre o teclado com o tipo
+ * certo e com preenchimento automático, e é o que faz o visitante em vez de
+ * desistir. Sem ele, o campo de telefone vira uma parede de digitar número.
+ */
+function renderGateField(input: {
+  name: string;
+  label: string;
+  type: string;
+  autocomplete: string;
+  placeholder: string;
+  inputmode?: string;
+}): string {
+  const mode = input.inputmode ? ` inputmode="${escapeAttribute(input.inputmode)}"` : "";
+  return `<label class="field">
+<span class="label">${escapeHtml(input.label)}</span>
+<input class="input" type="${escapeAttribute(input.type)}" name="${escapeAttribute(input.name)}" autocomplete="${escapeAttribute(input.autocomplete)}" placeholder="${escapeAttribute(input.placeholder)}"${mode} required>
+</label>`;
+}
+
+/**
+ * O formulário de coleta.
+ *
+ * O destino **não** entra no HTML. Com ele no `action` ou em qualquer
+ * atributo, bastaria abrir o código-fonte para pular a coleta — que é a única
+ * coisa que essa tela faz. O destino volta na resposta do POST, um 303 para
+ * quem preencheu.
+ */
+function renderGateForm(data: {
+  linkId: string;
+  eventId: string;
+  collectName: boolean;
+  collectEmail: boolean;
+  collectPhone: boolean;
+  privacyNote: string;
+  preview: boolean;
+}): string {
+  const fields: string[] = [];
+
+  if (data.collectName) {
+    fields.push(
+      renderGateField({
+        name: "name",
+        label: "Nome completo",
+        type: "text",
+        autocomplete: "name",
+        placeholder: "Como podemos te chamar",
+      }),
+    );
+  }
+
+  if (data.collectEmail) {
+    fields.push(
+      renderGateField({
+        name: "email",
+        label: "E-mail",
+        type: "email",
+        autocomplete: "email",
+        placeholder: "voce@exemplo.com",
+        inputmode: "email",
+      }),
+    );
+  }
+
+  if (data.collectPhone) {
+    fields.push(
+      renderGateField({
+        name: "phone",
+        label: "Telefone",
+        type: "tel",
+        autocomplete: "tel",
+        placeholder: "11 98888-7777",
+        inputmode: "tel",
+      }),
+    );
+  }
+
+  if (fields.length === 0) return "";
+
+  return `<form class="gate" method="post" action="/go/${escapeAttribute(data.linkId)}"${data.preview ? ' data-preview="1"' : ""}>
+<input type="hidden" name="eventId" value="${escapeAttribute(data.eventId)}">
+${fields.join("\n")}
+<label class="consent">
+<input type="checkbox" name="consent" value="1" required>
+<span>${escapeHtml(CONSENT_LABEL)}</span>
+</label>
+<p class="privacy">${escapeHtml(data.privacyNote)}</p>
+<button class="cta" id="cta" type="submit">Entrar agora</button>
+</form>`;
+}
+
 const STYLES = `
 *,*::before,*::after{box-sizing:border-box}
 html,body{margin:0;height:100%}
@@ -201,6 +298,43 @@ body{
 .cta:focus-visible{outline:2px solid #93c5fd;outline-offset:3px}
 @keyframes pulse{from{opacity:.55;transform:scale(.9)}70%{opacity:0;transform:scale(1.5)}100%{opacity:0;transform:scale(1.5)}}
 @media (prefers-reduced-motion:reduce){.mark::after{animation-duration:.01ms}}
+.gate{margin-top:24px;text-align:left}
+.field{display:block;margin-bottom:14px}
+.label{display:block;margin-bottom:6px;font-size:.8125rem;font-weight:500;color:#c3cbdb}
+.input{
+  width:100%;padding:13px 14px;border-radius:12px;
+  border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);
+  color:#f4f6fb;font:inherit;font-size:.9375rem;
+  transition:border-color .15s ease,box-shadow .15s ease;
+}
+.input::placeholder{color:#5f6a7d}
+.input:focus{outline:none;border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.2)}
+.input:user-invalid{border-color:#dc2626}
+.consent{
+  display:flex;gap:10px;align-items:flex-start;margin:18px 0 0;
+  font-size:.8125rem;line-height:1.55;color:#9aa5b8;cursor:pointer;text-align:left;
+}
+.consent input{
+  width:17px;height:17px;margin:2px 0 0;flex:0 0 auto;accent-color:#3b82f6;cursor:pointer;
+}
+.privacy{margin:12px 0 0;font-size:.75rem;line-height:1.6;color:#6b7688}
+button.cta{
+  display:block;width:100%;margin-top:22px;padding:16px 28px;border-radius:16px;
+  font:inherit;font-size:1rem;font-weight:600;color:#fff;cursor:pointer;
+  border:0;background-image:linear-gradient(135deg,#93c5fd 0%,#3b82f6 50%,#1d4ed8 100%);
+  box-shadow:0 14px 40px -10px rgba(59,130,246,.55);
+  transition:filter .2s ease,transform .2s ease;
+}
+button.cta:hover{filter:brightness(1.1)}
+button.cta:active{transform:translateY(1px)}
+button.cta:focus-visible{outline:2px solid #93c5fd;outline-offset:3px}
+.preview-ribbon{
+  position:fixed;top:0;left:0;right:0;z-index:10;
+  padding:9px 16px;text-align:center;
+  font-size:.75rem;font-weight:600;letter-spacing:.02em;color:#7c2d12;
+  background:#fed7aa;border-bottom:1px solid #fdba74;
+}
+.preview-ribbon code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-weight:400}
 `;
 
 /**
