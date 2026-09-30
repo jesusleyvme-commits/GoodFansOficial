@@ -268,9 +268,24 @@ describe("renderRedirectPage: gate de coleta", () => {
     expect(html).toContain('autocomplete="tel"');
   });
 
-  it("esconde a marca quando showLogo é false", () => {
-    expect(page({ ...gate, showLogo: false })).not.toContain('class="mark"');
-    expect(page({ ...gate, showLogo: true })).toContain('class="mark"');
+  it("coloca a foto da modelo no cabeçalho", () => {
+    const url = "https://projeto.supabase.co/storage/v1/object/public/avatars/u1/foto.png";
+    expect(page({ ...gate, photoUrl: url })).toContain(`<img class="photo" src="${url}"`);
+  });
+
+  it("omite a foto quando a modelo não tem uma", () => {
+    expect(page({ ...gate, photoUrl: null })).not.toContain('class="photo"');
+    expect(page(gate)).not.toContain('class="photo"');
+  });
+
+  // A marca do site saiu da página: quem compra o conteúdo não quer ver o logo
+  // de quem intermediou. A foto da modelo ocupa o lugar, e o nome do produto é
+  // o título.
+  it("não mostra a marca do site e usa o produto como título", () => {
+    const html = page(gate);
+
+    expect(html).not.toContain('class="mark"');
+    expect(html).toContain('<h1 class="title">Masterclass</h1>');
   });
 
   it("usa o texto do creator no lugar do padrão", () => {
@@ -284,11 +299,56 @@ describe("renderRedirectPage: gate de coleta", () => {
   it("volta ao padrão quando o texto do creator é vazio", () => {
     // Null e string vazia significam "usa o padrão", para o creator poder
     // limpar um campo e voltar ao texto do app.
-    expect(page({ ...gate, headline: "   " })).toContain(DEFAULT_HEADLINE);
+    expect(page({ ...gate, headline: "   " })).toContain("Preencha para liberar o acesso");
   });
 
   it("mostra o texto de privacidade padrão quando o creator não escreve nada", () => {
     expect(page(gate)).toContain("criptografada");
+  });
+});
+
+describe("renderRedirectPage: o texto de privacidade", () => {
+  const gate = { collectName: true, collectEmail: true, collectPhone: true };
+
+  it("diz a finalidade e o fato concreto de proteção", () => {
+    const html = page(gate);
+
+    expect(html).toContain("pessoa real");
+    expect(html).toContain("criptografada");
+    expect(html).toContain("cifrados no banco");
+  });
+
+  // Nenhum destes entra no texto. "100% sigilo" e "garantido pela lei" não são
+  // verificáveis — a infraestrutura é de terceiro e uma ordem judicial obriga a
+  // entregar — e afirmá-los na tela de um consumidor é publicidade enganosa
+  // (CDC art. 37). O teste existe para o texto padrão não voltar aundi.
+  it("não promete sigilo absoluto nem garantia legal", () => {
+    const html = page(gate).toLowerCase();
+
+    for (const promessa of [
+      "100%",
+      "totalmente seguro",
+      "garantido pela lei",
+      "garantia de privacidade",
+      "blindado",
+      "inviolável",
+    ]) {
+      expect(html).not.toContain(promessa);
+    }
+  });
+
+  it("não promete apagar o que continua guardado", () => {
+    // Os dados ficam guardados. Se o texto disser que são apagados, ele está
+    // errado — e o erro fica na tela, na frente de quem está decidindo.
+    const html = page(gate).toLowerCase();
+
+    expect(html).not.toContain("serão apagados");
+    expect(html).not.toContain("apagamos seus dados");
+    expect(html).not.toContain("descartados");
+  });
+
+  it("diz como pedir a exclusão", () => {
+    expect(page(gate)).toContain("exclusão");
   });
 });
 
