@@ -322,8 +322,18 @@ describe("renderRedirectPage: o texto de privacidade", () => {
   // verificáveis — a infraestrutura é de terceiro e uma ordem judicial obriga a
   // entregar — e afirmá-los na tela de um consumidor é publicidade enganosa
   // (CDC art. 37). O teste existe para o texto padrão não voltar aundi.
+  /** Só o que o visitante lê. O CSS tem `100%` em `width`, e não é promessa. */
+  function textoDaPagina() {
+    return page(gate)
+      .replace(/<style>[\s\S]*?<\/style>/, "")
+      .replace(/<script>[\s\S]*?<\/script>/, "")
+      .replace(/<[^>]+>/g, " ")
+      .replace(/\s+/g, " ")
+      .toLowerCase();
+  }
+
   it("não promete sigilo absoluto nem garantia legal", () => {
-    const html = page(gate).toLowerCase();
+    const html = textoDaPagina();
 
     for (const promessa of [
       "100%",
@@ -340,7 +350,7 @@ describe("renderRedirectPage: o texto de privacidade", () => {
   it("não promete apagar o que continua guardado", () => {
     // Os dados ficam guardados. Se o texto disser que são apagados, ele está
     // errado — e o erro fica na tela, na frente de quem está decidindo.
-    const html = page(gate).toLowerCase();
+    const html = textoDaPagina();
 
     expect(html).not.toContain("serão apagados");
     expect(html).not.toContain("apagamos seus dados");
