@@ -19,6 +19,16 @@ export type Database = {
           pixel_id: string | null;
           /** Receita do link em euros. null significa "não informar valor". */
           value_eur: number | null;
+          /** Mostra a marca da GoodFans no topo da página. */
+          show_logo: boolean;
+          /** Cada campo ligado aparece no formulário e passa a ser obrigatório. */
+          collect_name: boolean;
+          collect_email: boolean;
+          collect_phone: boolean;
+          /** Textos do gate. null usa o padrão do app. */
+          gate_headline: string | null;
+          gate_subhead: string | null;
+          privacy_note: string | null;
           created_at: string;
         };
         Insert: {
@@ -29,6 +39,13 @@ export type Database = {
           destination_url: string;
           pixel_id?: string | null;
           value_eur?: number | null;
+          show_logo?: boolean;
+          collect_name?: boolean;
+          collect_email?: boolean;
+          collect_phone?: boolean;
+          gate_headline?: string | null;
+          gate_subhead?: string | null;
+          privacy_note?: string | null;
           created_at?: string;
         };
         Update: {
@@ -39,6 +56,13 @@ export type Database = {
           destination_url?: string;
           pixel_id?: string | null;
           value_eur?: number | null;
+          show_logo?: boolean;
+          collect_name?: boolean;
+          collect_email?: boolean;
+          collect_phone?: boolean;
+          gate_headline?: string | null;
+          gate_subhead?: string | null;
+          privacy_note?: string | null;
           created_at?: string;
         };
         Relationships: [
@@ -147,6 +171,60 @@ export type Database = {
           destination_url: string;
           pixel_id: string | null;
           value_eur: number | null;
+          show_logo: boolean;
+          collect_name: boolean;
+          collect_email: boolean;
+          collect_phone: boolean;
+          gate_headline: string | null;
+          gate_subhead: string | null;
+          privacy_note: string | null;
+        }[];
+      };
+      /**
+       * Grava a coleta antes de liberar o acesso. Vale só o que o link pede, e
+       * `p_consent` precisa vir marcado: é o que a LGPD chama de consentimento
+       * livre, e a função devolve false em vez de gravar quando falta.
+       */
+      submit_gate: {
+        Args: {
+          p_link_id: string;
+          p_name: string | null;
+          p_email: string | null;
+          p_phone: string | null;
+          p_event_id: string;
+          p_consent: boolean;
+        };
+        Returns: boolean;
+      };
+      /** Ajusta o gate do link. A posse é conferida no banco com auth.uid(). */
+      update_link_gate: {
+        Args: {
+          p_link_id: string;
+          p_show_logo: boolean;
+          p_collect_name: boolean;
+          p_collect_email: boolean;
+          p_collect_phone: boolean;
+          p_headline: string | null;
+          p_subhead: string | null;
+          p_privacy_note: string | null;
+        };
+        Returns: boolean;
+      };
+      /**
+       * Lista o que foi coletado nos links do creator, com o PII em claro. Só
+       * ele mesmo, conferido por RLS — e é a única forma de ler isso, já que as
+       * funções de decifragem são inacessíveis ao anon.
+       */
+      list_submissions: {
+        Args: { p_link_id: string };
+        Returns: {
+          id: string;
+          link_id: string;
+          name: string | null;
+          email: string | null;
+          phone: string | null;
+          consented: boolean;
+          created_at: string;
         }[];
       };
       /** Grava o token cifrado e devolve só se ficou configurado. */

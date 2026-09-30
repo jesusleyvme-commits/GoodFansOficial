@@ -7,6 +7,15 @@ export type ResolvedLink = {
   destinationUrl: string;
   pixelId: string | null;
   valueEur: number | null;
+  gate: {
+    showLogo: boolean;
+    collectName: boolean;
+    collectEmail: boolean;
+    collectPhone: boolean;
+    headline: string | null;
+    subhead: string | null;
+    privacyNote: string | null;
+  };
 };
 
 /**
@@ -44,5 +53,16 @@ export async function resolveLink(id: string): Promise<ResolvedLink | null> {
     // O PostgREST devolve numeric como string para não perder precisão, e a
     // Meta espera número no evento. Valor ausente continua ausente.
     valueEur: typeof rawValue === "number" && Number.isFinite(rawValue) ? rawValue : null,
+    gate: {
+      // O `=== true` é o que mantém links antigos sem gate funcionando: coluna
+      // ausente ou null vira false, e a página segue sendo a âncora direta.
+      showLogo: row.show_logo === true,
+      collectName: row.collect_name === true,
+      collectEmail: row.collect_email === true,
+      collectPhone: row.collect_phone === true,
+      headline: row.gate_headline,
+      subhead: row.gate_subhead,
+      privacyNote: row.privacy_note,
+    },
   };
 }
