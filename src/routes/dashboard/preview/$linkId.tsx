@@ -4,8 +4,11 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { Button } from "@/components/button";
 import { Spinner } from "@/components/spinner";
-import type { DeliveryLink } from "@/lib/database.types";
+import { avatarUrl } from "@/lib/avatars";
+import type { DeliveryLink, Model } from "@/lib/database.types";
 import { getLink } from "@/lib/links-api";
+import { getModel } from "@/lib/models-api";
+import { getPageSettings, type PageSettings } from "@/lib/page-api";
 import { renderRedirectPage } from "@/lib/redirect-page";
 import { pageHead } from "@/lib/site-head";
 
@@ -30,6 +33,8 @@ export const Route = createFileRoute("/dashboard/preview/$linkId")({
 function LinkPreview() {
   const { linkId } = useParams({ from: "/dashboard/preview/$linkId" });
   const [link, setLink] = useState<DeliveryLink | null>(null);
+  const [settings, setSettings] = useState<PageSettings | null>(null);
+  const [model, setModel] = useState<Model | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [carregando, setCarregando] = useState(true);
 
@@ -37,7 +42,17 @@ function LinkPreview() {
     setCarregando(true);
     setErro(null);
     try {
-      setLink(await getLink(linkId));
+      const found = await getLink(linkId);
+      setLink(found);
+      if (!found) {
+        setErro("Este link não existe mais.");
+        return;
+      }
+      // A página é global, mas o preview é de um link: é do link que saem o nome
+      // do produto, o destino e a foto da modelo.
+      const [pageSettings, owner] = await Promise.all([getPageSettings(), getModel(found.model_id)]);
+      setSettings(pageSettings);
+      setModel(owner);
     } catch {
       setErro("Não foi possível abrir este link.");
     } finally {
@@ -60,7 +75,7 @@ function LinkPreview() {
   }, [link]);
 
   const html = useMemo(() => {
-    if (!link) return "";
+    if (!link || !settings) return "";
     return renderRedirectPage({
       destination: link.destination_url,
       // O preview não carrega o pixel de propósito: abrir esta tela não pode
@@ -71,21 +86,21 @@ function LinkPreview() {
       linkId: link.id,
       eventId: crypto.randomUUID(),
       preview: true,
-      showLogo: link.show_logo,
-      collectName: link.collect_name,
-      collectEmail: link.collect_email,
-      collectPhone: link.collect_phone,
-      headline: link.gate_headline,
-      subhead: link.gate_subhead,
-      privacyNote: link.privacy_note,
+      photoUrl: avatarUrl(model?.avatar_path),
+      collectName: settings.collectName,
+      collectEmail: settings.collectEmail,
+      collectPhone: settings.collectPhone,
+      headline: settings.headline,
+      subhead: settings.subhead,
+      privacyNote: settings.privacyNote,
     });
-  }, [link]);
+  }, [link, settings, model]);
 
   return (
     <div className="space-y-5">
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="sm" asChild>
-          <Link to="/dashboard/modelos" aria-label="Voltar para modelos">
+          <Link to="/dashboard/pagina" aria-label="Voltar para a página de entrega">
             <ArrowLeft />
           </Link>
         </Button>
@@ -107,7 +122,7 @@ function LinkPreview() {
         <div className="rounded-card border border-red-500/20 bg-red-500/[0.04] p-8 text-center text-sm text-red-200">
           {erro}
         </div>
-      ) : carregando || !link ? (
+      ) : carregando || !link || !settings ? (
         <div className="grid place-items-center py-20">
           <Spinner className="size-5 text-brand-400" />
         </div>
