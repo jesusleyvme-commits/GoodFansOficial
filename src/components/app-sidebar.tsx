@@ -38,11 +38,16 @@ type AppSidebarProps = {
 };
 
 /**
- * Menu lateral do painel, com o botão que o abre no cabeçalho.
+ * Menu lateral do painel.
  *
- * O botão fica fora do painel deslizante de propósito: é o que fecha o menu, e
- * um controle que desaparece junto com o que ele controla obriga a pessoa a
- * caçar o clique fora da área escurecida para sair.
+ * A partir de `md` ele é uma barra fixa, sempre visível, e o conteúdo do
+ * painel é deslocado para a direita. Abaixo disso vira gaveta, porque 288px de
+ * menu fixo em uma tela de celular deixa um palmo de conteúdo.
+ *
+ * A distinction é feita com `matchMedia` e não com classes CSS porque o `inert`
+ * e o `aria` precisam da largura real: um menu marcado como `inert` por estar
+ * "fechado" no estado enquanto está visível na tela é um menu que ninguém
+ * consegue usar com o teclado.
  */
 export function AppSidebar({
   open,
@@ -57,15 +62,22 @@ export function AppSidebar({
   // router derrubaria a gaveta a cada re-render sem mudança de página.
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const painel = useRef<HTMLDivElement>(null);
+  const telaLarga = useMediaQuery("(min-width: 768px)");
 
-  // Navegar fecha. Um menu que continua aberto em cima da página nova esconde o
-  // conteúdo que a pessoa acabou de pedir.
+  // Na tela larga a barra está sempre aberta; o estado só decide o que acontece
+  // no celular.
+  const aberto = telaLarga || open;
+
+  // Navegar fecha a gaveta. Um menu que continua aberto em cima da página nova
+  // esconde o conteúdo que a pessoa acabou de pedir. Na tela larga não há o que
+  // fechar, e chamar o callback realçaria o botão de um menu que continua ali.
   useEffect(() => {
+    if (telaLarga) return;
     onOpenChange(false);
     // Só o caminho importa aqui; a função chega nova a cada render do pai e
     // repetiria o efeito sem parar.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname]);
+  }, [pathname, telaLarga]);
 
   // `inert` é o que tira o menu do alcance do teclado quando fechado. O
   // atributo é o padrão correto para "existe no DOM, mas não está na tela"; sem
@@ -75,25 +87,25 @@ export function AppSidebar({
   // Feito por efeito, e não como atributo JSX, porque o `inert` só chegou nos
   // tipos do React 19.1 e o projeto compila contra uma versão anterior.
   useEffect(() => {
-    if (painel.current) painel.current.inert = !open;
-  }, [open]);
+    if (painel.current) painel.current.inert = !aberto;
+  }, [aberto]);
 
   // Escape fecha, e o foco vai para o próprio painel. Sem isso o foco fica preso
   // num elemento que saiu da tela e o teclado anda só pelo documento de baixo.
   useEffect(() => {
-    if (!open) return;
+    if (!aberto) return;
 
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") onOpenChange(false);
     }
 
     document.addEventListener("keydown", onKeyDown);
-    painel.current?.focus();
+    // Só na gaveta. Na barra fixa, roubar o foco para o menu a cada
+    // re-render jogaria quem está lendo o conteúdo de volta para o menu.
+    if (!telaLarga) painel.current?.focus();
 
     return () => document.removeEventListener("keydown", onKeyDown);
-  }, [open, onOpenChange]);
-
-  const visiveis = ITEMS;
+  }, [aberto, onOpenChange, telaLarga]);
 
   return (
     <>
@@ -102,7 +114,8 @@ export function AppSidebar({
         // menu invisível
         className={cn(
           "fixed inset-0 z-40 bg-black/60 backdrop-blur-sm transition-opacity duration-200",
-          open ? "opacity-100" : "pointer-events-none opacity-0",
+          "md:hidden",
+          aberto ? "opacity-100" : "pointer-events-none opacity-0",
         )}
         onClick={() => onOpenChange(false)}
         aria-hidden="true"
@@ -116,7 +129,7 @@ export function AppSidebar({
         tabIndex={-1}
         className={cn(
           "fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r border-white/[0.06] bg-[#0b0b12] transition-transform duration-200",
-          open ? "translate-x-0" : "-translate-x-full",
+          aberto ? "translate-x-0" : "-translate-x-full",
           // O foco no painel é o primeiro destino do teclado; o contorno do
           // `focus-visible` não deve aparecer para quem só abriu o menu.
           "focus:outline-none",
@@ -129,14 +142,14 @@ export function AppSidebar({
             type="button"
             onClick={() => onOpenChange(false)}
             aria-label="Fechar menu"
-            className="grid size-9 cursor-pointer place-items-center rounded-input text-muted-foreground transition-colors hover:bg-white/[0.06] hover:text-foreground focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:outline-none"
+            className="grid size-9 cursor-pointer place-items-center rounded-input text-muted-foreground transition-colors hover:bg-white/[0.06] hover:text-foreground focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:outline-none md:hidden"
           >
             <X className="size-5" />
           </button>
         </div>
 
         <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-2">
-          {visiveis.map((item) => {
+          {ITEMS.map((item) => {
             const Icon = item.icon;
             return (
               <Link
@@ -146,8 +159,7 @@ export function AppSidebar({
                 // quando a pessoa está na página de um modelo — a sub-página tem
                 // outro item, e dois marcados ao mesmo tempo não indica onde
                 // ela está.
-                activeOptions={{ exact: item.to === "/dashboard" }}
-                activeProps={{ className: "bg-white/[0.07] text-foreground" }}
+                activeOptions={{ exact: item.to === "/dashboard" }}                activeProps={{ className: "bg-white/[0.07] text-foreground" }}
                 className="flex items-center gap-3 rounded-input px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-white/[0.05] hover:text-foreground"
               >
                 <Icon className="size-4 shrink-0" />
