@@ -50,8 +50,8 @@ export const DEFAULT_PRIVACY_NOTE =
   "guardados de forma cifrada. Não vendemos seus dados. Para pedir a exclusão " +
   "do que coletamos, responda a esta mensagem.";
 
-const DEFAULT_HEADLINE = "Seu acesso está liberado";
-const DEFAULT_SUBHEAD = "Clique abaixo para entrar.";
+export const DEFAULT_HEADLINE = "Seu acesso está liberado";
+export const DEFAULT_SUBHEAD = "Clique abaixo para entrar.";
 
 
 const ESCAPES: Record<string, string> = {
