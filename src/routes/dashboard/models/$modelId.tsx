@@ -66,7 +66,6 @@ function ModelPage() {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [deletingLinkId, setDeletingLinkId] = useState<string | null>(null);
   const [editingLinkId, setEditingLinkId] = useState<string | null>(null);
-  const [gateLinkId, setGateLinkId] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
     // Reabrir o carregamento é o que evita a troca de modelo mostrar dados
