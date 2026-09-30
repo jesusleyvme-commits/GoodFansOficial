@@ -39,7 +39,14 @@ function PageSettingsPage() {
     void refresh();
   }, [refresh]);
 
-  if (loading) return <Spinner label="Carregando a página…" />;
+  if (loading) {
+    return (
+      <div className="flex items-center gap-2 py-20 text-sm text-muted-foreground">
+        <Spinner className="size-5 text-brand-400" />
+        Carregando a página…
+      </div>
+    );
+  }
 
   if (loadError || !settings) {
     return (

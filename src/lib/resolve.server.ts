@@ -39,13 +39,10 @@ export async function resolveLink(id: string): Promise<ResolvedLink | null> {
     return null;
   }
 
-  const row = data?.[0] as Database["public"]["Tables"]["delivery_links"]["Row"] & {
-    pixel_id: string | null;
-    avatar_path: string | null;
-    headline: string | null;
-    subhead: string | null;
-    privacy_note: string | null;
-  };
+  // O tipo vem do retorno declarado de `resolve_delivery_link`, e não da
+  // tabela: a função já traz os campos do construtor do creator e o
+  // `avatar_path` da modelo, que não existem em `delivery_links`.
+  const row = data?.[0] as Database["public"]["Functions"]["resolve_delivery_link"]["Returns"][0] | undefined;
   if (!row) return null;
 
   const destinationUrl = normalizeDestinationUrl(row.destination_url);
