@@ -1,14 +1,17 @@
 import { type Database } from "@/lib/database.types";
 import { anonClient } from "@/lib/anon-client.server";
 import { normalizeDestinationUrl, normalizePixelId } from "@/lib/links";
+import { publicAvatarUrl } from "@/lib/avatar-path";
+import { supabaseUrl } from "@/lib/env";
 
 export type ResolvedLink = {
   productName: string;
   destinationUrl: string;
   pixelId: string | null;
   valueEur: number | null;
+  /** Foto da modelo, URL absoluta do bucket público, ou null se não tem foto. */
+  photoUrl: string | null;
   gate: {
-    showLogo: boolean;
     collectName: boolean;
     collectEmail: boolean;
     collectPhone: boolean;
@@ -38,6 +41,10 @@ export async function resolveLink(id: string): Promise<ResolvedLink | null> {
 
   const row = data?.[0] as Database["public"]["Tables"]["delivery_links"]["Row"] & {
     pixel_id: string | null;
+    avatar_path: string | null;
+    headline: string | null;
+    subhead: string | null;
+    privacy_note: string | null;
   };
   if (!row) return null;
 
@@ -53,17 +60,17 @@ export async function resolveLink(id: string): Promise<ResolvedLink | null> {
     // O PostgREST devolve numeric como string para não perder precisão, e a
     // Meta espera número no evento. Valor ausente continua ausente.
     valueEur: typeof rawValue === "number" && Number.isFinite(rawValue) ? rawValue : null,
+    photoUrl: publicAvatarUrl(supabaseUrl(), row.avatar_path),
     gate: {
       // Normalização defensiva: o PostgREST devolve boolean como boolean, mas
       // um null ou coluna ausente também pode chegar aqui e não pode virar
       // "gate ligado" por acidente. Todo campo ligado tem que ser true de
       // verdade, e o padrão de ligar é decisão do creator, não deste código.
-      showLogo: row.show_logo === true,
       collectName: row.collect_name === true,
       collectEmail: row.collect_email === true,
       collectPhone: row.collect_phone === true,
-      headline: row.gate_headline,
-      subhead: row.gate_subhead,
+      headline: row.headline,
+      subhead: row.subhead,
       privacyNote: row.privacy_note,
     },
   };

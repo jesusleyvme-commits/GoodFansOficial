@@ -293,25 +293,19 @@ body{
   box-shadow:0 24px 70px -24px rgba(0,0,0,.85),0 0 0 1px rgba(255,255,255,.03);
   text-align:center;
 }
-.mark{
-  width:56px;height:56px;margin:0 auto 24px;border-radius:999px;
-  background-image:linear-gradient(135deg,#93c5fd 0%,#3b82f6 50%,#1d4ed8 100%);
-  display:grid;place-items:center;position:relative;
-  box-shadow:0 14px 40px -10px rgba(59,130,246,.55);
+.photo{
+  width:84px;height:84px;margin:0 auto 20px;border-radius:999px;
+  object-fit:cover;display:block;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.14);
+  box-shadow:0 14px 40px -12px rgba(59,130,246,.5);
 }
-.mark::after{
-  content:"";position:absolute;inset:0;border-radius:999px;
-  border:1px solid rgba(147,197,253,.45);animation:pulse 1.5s ease-out infinite;
+.title{
+  margin:0;font-size:1.6rem;font-weight:600;letter-spacing:-.02em;line-height:1.25;
+  overflow-wrap:anywhere;
 }
-.mark span{display:block;width:14px;height:14px;border-radius:999px;background:#05060a}
-.product{
-  margin:0 0 8px;font-size:.75rem;font-weight:600;letter-spacing:.18em;
-  text-transform:uppercase;
-  background-image:linear-gradient(90deg,#93c5fd 0%,#3b82f6 55%,#1d4ed8 100%);
-  -webkit-background-clip:text;background-clip:text;color:transparent;
-}
-.title{margin:0 0 10px;font-size:1.5rem;font-weight:600;letter-spacing:-.02em;line-height:1.3}
-.sub{margin:0;color:#8b95a8;font-size:.9375rem;line-height:1.6}
+.lead{margin:10px 0 0;font-size:1.0625rem;font-weight:500;color:#dbe3f0;line-height:1.45}
+.sub{margin:8px 0 0;color:#8b95a8;font-size:.9375rem;line-height:1.6}
 .cta{
   display:block;margin-top:28px;padding:16px 28px;border-radius:16px;
   font-size:1rem;font-weight:600;text-decoration:none;text-align:center;color:#fff;
@@ -322,8 +316,6 @@ body{
 .cta:hover{filter:brightness(1.1)}
 .cta:active{transform:translateY(1px)}
 .cta:focus-visible{outline:2px solid #93c5fd;outline-offset:3px}
-@keyframes pulse{from{opacity:.55;transform:scale(.9)}70%{opacity:0;transform:scale(1.5)}100%{opacity:0;transform:scale(1.5)}}
-@media (prefers-reduced-motion:reduce){.mark::after{animation-duration:.01ms}}
 .gate{margin-top:24px;text-align:left}
 .form-error{
   margin:0 0 16px;padding:11px 14px;border-radius:11px;
@@ -365,7 +357,7 @@ button.cta:focus-visible{outline:2px solid #93c5fd;outline-offset:3px}
   font-size:.75rem;font-weight:600;letter-spacing:.02em;color:#7c2d12;
   background:#fed7aa;border-bottom:1px solid #fdba74;
 }
-.preview-ribbon code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-weight:400}
+.preview-ribbon a{color:#7c2d12;text-decoration:underline;font-weight:700}
 `;
 
 /**
@@ -389,8 +381,10 @@ export function renderRedirectPage(data: RedirectPageData): string {
   const gate =
     data.collectName === true || data.collectEmail === true || data.collectPhone === true;
 
-  const headline = escapeHtml(data.headline?.trim() || DEFAULT_HEADLINE);
-  const subhead = escapeHtml(data.subhead?.trim() || (gate ? "" : DEFAULT_SUBHEAD));
+  const headline = escapeHtml(
+    data.headline?.trim() || (gate ? DEFAULT_GATE_HEADLINE : DEFAULT_HEADLINE),
+  );
+  const subhead = escapeHtml(data.subhead?.trim() || (gate ? DEFAULT_GATE_SUBHEAD : ""));
   const privacyNote = data.privacyNote?.trim() || DEFAULT_PRIVACY_NOTE;
 
   const form = gate
@@ -429,8 +423,11 @@ export function renderRedirectPage(data: RedirectPageData): string {
     ? ""
     : `<a class="cta" id="cta" href="${href}" rel="noopener noreferrer">Entrar agora</a>`;
 
+  // No preview o destino aparece na tarja como link, e não escondido. O creator
+  // precisa sair do iframe para conferir a página como o visitante a vê — e é
+  // por isso que ela abre em outra aba, para ele não perder o construtor.
   const ribbon = preview
-    ? `<div class="preview-ribbon">Pré-visualização — enviar o formulário aqui não grava nada e não conta como conversão. Destino real: <code>${href}</code></div>`
+    ? `<div class="preview-ribbon">Pré-visualização — enviar o formulário aqui não grava nada e não conta como conversão. Destino real: <a href="/go/${escapeAttribute(data.linkId)}" target="_blank" rel="noopener">abrir o link</a></div>`
     : "";
 
   // No preview, o submit é bloqueado no navegador. Sem isso o creator testaria o
@@ -445,7 +442,12 @@ document.addEventListener('submit',function(e){
 </script>`
     : "";
 
-  const mark = data.showLogo === false ? "" : `<div class="mark"><span></span></div>`;
+  // A foto vem pronta em URL absoluta do bucket público. `alt` vazio de
+  // propósito: ao lado do nome do produto, um "foto da modelo" lido em voz alta
+  // seria repetição, e o texto ao lado já cumpre esse papel.
+  const photo = data.photoUrl
+    ? `<img class="photo" src="${escapeAttribute(data.photoUrl)}" alt="" width="84" height="84" referrerpolicy="no-referrer">`
+    : "";
 
   return `<!doctype html>
 <html lang="pt-BR">
@@ -465,9 +467,9 @@ ${preview ? '<meta name="robots" content="noindex,nofollow,noarchive">' : ""}
 <body>
 ${ribbon}
 <main class="card">
-  ${mark}
-  <p class="product">${title}</p>
-  <h1 class="title">${headline}</h1>
+  ${photo}
+  <h1 class="title">${title}</h1>
+  ${headline && headline !== title ? `<p class="lead">${headline}</p>` : ""}
   ${subhead ? `<p class="sub">${subhead}</p>` : ""}
   ${form}
   ${callToAction}
@@ -493,7 +495,6 @@ export function renderUnavailablePage(message = "Este link não está mais dispo
 </head>
 <body>
 <main class="card">
-  <div class="mark"><span></span></div>
   <h1 class="title">${title}</h1>
   <p class="sub">Confira o link e tente novamente.</p>
 </main>
