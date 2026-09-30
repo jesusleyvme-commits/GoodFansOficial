@@ -19,16 +19,6 @@ export type Database = {
           pixel_id: string | null;
           /** Receita do link em euros. null significa "não informar valor". */
           value_eur: number | null;
-          /** Mostra a marca da GoodFans no topo da página. */
-          show_logo: boolean;
-          /** Cada campo ligado aparece no formulário e passa a ser obrigatório. */
-          collect_name: boolean;
-          collect_email: boolean;
-          collect_phone: boolean;
-          /** Textos do gate. null usa o padrão do app. */
-          gate_headline: string | null;
-          gate_subhead: string | null;
-          privacy_note: string | null;
           created_at: string;
         };
         Insert: {
@@ -39,13 +29,6 @@ export type Database = {
           destination_url: string;
           pixel_id?: string | null;
           value_eur?: number | null;
-          show_logo?: boolean;
-          collect_name?: boolean;
-          collect_email?: boolean;
-          collect_phone?: boolean;
-          gate_headline?: string | null;
-          gate_subhead?: string | null;
-          privacy_note?: string | null;
           created_at?: string;
         };
         Update: {
@@ -56,13 +39,6 @@ export type Database = {
           destination_url?: string;
           pixel_id?: string | null;
           value_eur?: number | null;
-          show_logo?: boolean;
-          collect_name?: boolean;
-          collect_email?: boolean;
-          collect_phone?: boolean;
-          gate_headline?: string | null;
-          gate_subhead?: string | null;
-          privacy_note?: string | null;
           created_at?: string;
         };
         Relationships: [
@@ -71,6 +47,50 @@ export type Database = {
             columns: ["model_id"];
             isOneToOne: false;
             referencedRelation: "models";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      page_settings: {
+        Row: {
+          /** Um por creator: a página de entrega é da conta, não do link. */
+          creator_id: string;
+          /** Cada campo ligado aparece no formulário e passa a ser obrigatório. */
+          collect_name: boolean;
+          collect_email: boolean;
+          collect_phone: boolean;
+          /** Textos da página. null usa o padrão do app. */
+          headline: string | null;
+          subhead: string | null;
+          privacy_note: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          creator_id: string;
+          collect_name?: boolean;
+          collect_email?: boolean;
+          collect_phone?: boolean;
+          headline?: string | null;
+          subhead?: string | null;
+          privacy_note?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          creator_id?: string;
+          collect_name?: boolean;
+          collect_email?: boolean;
+          collect_phone?: boolean;
+          headline?: string | null;
+          subhead?: string | null;
+          privacy_note?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "page_settings_creator_id_fkey";
+            columns: ["creator_id"];
+            isOneToOne: true;
+            referencedRelation: "users";
             referencedColumns: ["id"];
           },
         ];
@@ -239,12 +259,13 @@ export type Database = {
           destination_url: string;
           pixel_id: string | null;
           value_eur: number | null;
-          show_logo: boolean;
+          /** Caminho da foto no bucket público, para o cabeçalho da página. */
+          avatar_path: string | null;
           collect_name: boolean;
           collect_email: boolean;
           collect_phone: boolean;
-          gate_headline: string | null;
-          gate_subhead: string | null;
+          headline: string | null;
+          subhead: string | null;
           privacy_note: string | null;
         }[];
       };
@@ -264,17 +285,28 @@ export type Database = {
         };
         Returns: boolean;
       };
-      /** Ajusta o gate do link. A posse é conferida no banco com auth.uid(). */
-      update_link_gate: {
+      /** Lê o construtor da página de entrega. Sem linha, devolve os padrões. */
+      get_page_settings: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          collect_name: boolean;
+          collect_email: boolean;
+          collect_phone: boolean;
+          headline: string | null;
+          subhead: string | null;
+          privacy_note: string | null;
+          updated_at: string | null;
+        }[];
+      };
+      /** Grava o construtor do creator autenticado. Texto vazio volta ao padrão. */
+      update_page_settings: {
         Args: {
-          p_link_id: string;
-          p_show_logo: boolean;
-          p_collect_name: boolean;
-          p_collect_email: boolean;
-          p_collect_phone: boolean;
-          p_headline: string | null;
-          p_subhead: string | null;
-          p_privacy_note: string | null;
+          p_collect_name?: boolean;
+          p_collect_email?: boolean;
+          p_collect_phone?: boolean;
+          p_headline?: string | null;
+          p_subhead?: string | null;
+          p_privacy_note?: string | null;
         };
         Returns: boolean;
       };
