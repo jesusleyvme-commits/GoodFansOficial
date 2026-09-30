@@ -17,6 +17,7 @@ import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
 import { Route as GoIdRouteImport } from './routes/go/$id'
 import { Route as DashboardSettingsRouteImport } from './routes/dashboard/settings'
 import { Route as DashboardAdminRouteImport } from './routes/dashboard/admin'
+import { Route as DashboardPreviewLinkIdRouteImport } from './routes/dashboard/preview/$linkId'
 import { Route as DashboardModelsModelIdRouteImport } from './routes/dashboard/models/$modelId'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -59,6 +60,11 @@ const DashboardAdminRoute = DashboardAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardPreviewLinkIdRoute = DashboardPreviewLinkIdRouteImport.update({
+  id: '/preview/$linkId',
+  path: '/preview/$linkId',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardModelsModelIdRoute = DashboardModelsModelIdRouteImport.update({
   id: '/models/$modelId',
   path: '/models/$modelId',
@@ -75,6 +81,7 @@ export interface FileRoutesByFullPath {
   '/go/$id': typeof GoIdRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/dashboard/models/$modelId': typeof DashboardModelsModelIdRoute
+  '/dashboard/preview/$linkId': typeof DashboardPreviewLinkIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -85,6 +92,7 @@ export interface FileRoutesByTo {
   '/go/$id': typeof GoIdRoute
   '/dashboard': typeof DashboardIndexRoute
   '/dashboard/models/$modelId': typeof DashboardModelsModelIdRoute
+  '/dashboard/preview/$linkId': typeof DashboardPreviewLinkIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -97,6 +105,7 @@ export interface FileRoutesById {
   '/go/$id': typeof GoIdRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/dashboard/models/$modelId': typeof DashboardModelsModelIdRoute
+  '/dashboard/preview/$linkId': typeof DashboardPreviewLinkIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -110,6 +119,7 @@ export interface FileRouteTypes {
     | '/go/$id'
     | '/dashboard/'
     | '/dashboard/models/$modelId'
+    | '/dashboard/preview/$linkId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -120,6 +130,7 @@ export interface FileRouteTypes {
     | '/go/$id'
     | '/dashboard'
     | '/dashboard/models/$modelId'
+    | '/dashboard/preview/$linkId'
   id:
     | '__root__'
     | '/'
@@ -131,6 +142,7 @@ export interface FileRouteTypes {
     | '/go/$id'
     | '/dashboard/'
     | '/dashboard/models/$modelId'
+    | '/dashboard/preview/$linkId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -199,6 +211,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardAdminRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/preview/$linkId': {
+      id: '/dashboard/preview/$linkId'
+      path: '/preview/$linkId'
+      fullPath: '/dashboard/preview/$linkId'
+      preLoaderRoute: typeof DashboardPreviewLinkIdRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/models/$modelId': {
       id: '/dashboard/models/$modelId'
       path: '/models/$modelId'
@@ -214,6 +233,7 @@ interface DashboardRouteChildren {
   DashboardSettingsRoute: typeof DashboardSettingsRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
   DashboardModelsModelIdRoute: typeof DashboardModelsModelIdRoute
+  DashboardPreviewLinkIdRoute: typeof DashboardPreviewLinkIdRoute
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
@@ -221,6 +241,7 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardSettingsRoute: DashboardSettingsRoute,
   DashboardIndexRoute: DashboardIndexRoute,
   DashboardModelsModelIdRoute: DashboardModelsModelIdRoute,
+  DashboardPreviewLinkIdRoute: DashboardPreviewLinkIdRoute,
 }
 
 const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
