@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, PanelTop, Shapes, Wallet, X } from "lucide-react";
+import { LayoutDashboard, Shapes, Wallet, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { Logo } from "@/components/logo";
@@ -24,7 +24,6 @@ type NavItem = {
 const ITEMS: NavItem[] = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/dashboard/modelos", label: "Modelos", icon: Shapes },
-  { to: "/dashboard/pagina", label: "Página", icon: PanelTop },
   { to: "/dashboard/financeiro", label: "Financeiro", icon: Wallet },
 ];
 

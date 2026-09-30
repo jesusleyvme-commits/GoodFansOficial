@@ -16,11 +16,9 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
 import { Route as GoIdRouteImport } from './routes/go/$id'
 import { Route as DashboardSettingsRouteImport } from './routes/dashboard/settings'
-import { Route as DashboardPaginaRouteImport } from './routes/dashboard/pagina'
 import { Route as DashboardModelosRouteImport } from './routes/dashboard/modelos'
 import { Route as DashboardFinanceiroRouteImport } from './routes/dashboard/financeiro'
 import { Route as DashboardAdminRouteImport } from './routes/dashboard/admin'
-import { Route as DashboardPreviewLinkIdRouteImport } from './routes/dashboard/preview/$linkId'
 import { Route as DashboardModelsModelIdRouteImport } from './routes/dashboard/models/$modelId'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -58,11 +56,6 @@ const DashboardSettingsRoute = DashboardSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => DashboardRoute,
 } as any)
-const DashboardPaginaRoute = DashboardPaginaRouteImport.update({
-  id: '/pagina',
-  path: '/pagina',
-  getParentRoute: () => DashboardRoute,
-} as any)
 const DashboardModelosRoute = DashboardModelosRouteImport.update({
   id: '/modelos',
   path: '/modelos',
@@ -76,11 +69,6 @@ const DashboardFinanceiroRoute = DashboardFinanceiroRouteImport.update({
 const DashboardAdminRoute = DashboardAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardPreviewLinkIdRoute = DashboardPreviewLinkIdRouteImport.update({
-  id: '/preview/$linkId',
-  path: '/preview/$linkId',
   getParentRoute: () => DashboardRoute,
 } as any)
 const DashboardModelsModelIdRoute = DashboardModelsModelIdRouteImport.update({
@@ -97,12 +85,10 @@ export interface FileRoutesByFullPath {
   '/dashboard/admin': typeof DashboardAdminRoute
   '/dashboard/financeiro': typeof DashboardFinanceiroRoute
   '/dashboard/modelos': typeof DashboardModelosRoute
-  '/dashboard/pagina': typeof DashboardPaginaRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/go/$id': typeof GoIdRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/dashboard/models/$modelId': typeof DashboardModelsModelIdRoute
-  '/dashboard/preview/$linkId': typeof DashboardPreviewLinkIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -111,12 +97,10 @@ export interface FileRoutesByTo {
   '/dashboard/admin': typeof DashboardAdminRoute
   '/dashboard/financeiro': typeof DashboardFinanceiroRoute
   '/dashboard/modelos': typeof DashboardModelosRoute
-  '/dashboard/pagina': typeof DashboardPaginaRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/go/$id': typeof GoIdRoute
   '/dashboard': typeof DashboardIndexRoute
   '/dashboard/models/$modelId': typeof DashboardModelsModelIdRoute
-  '/dashboard/preview/$linkId': typeof DashboardPreviewLinkIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -127,12 +111,10 @@ export interface FileRoutesById {
   '/dashboard/admin': typeof DashboardAdminRoute
   '/dashboard/financeiro': typeof DashboardFinanceiroRoute
   '/dashboard/modelos': typeof DashboardModelosRoute
-  '/dashboard/pagina': typeof DashboardPaginaRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/go/$id': typeof GoIdRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/dashboard/models/$modelId': typeof DashboardModelsModelIdRoute
-  '/dashboard/preview/$linkId': typeof DashboardPreviewLinkIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -144,12 +126,10 @@ export interface FileRouteTypes {
     | '/dashboard/admin'
     | '/dashboard/financeiro'
     | '/dashboard/modelos'
-    | '/dashboard/pagina'
     | '/dashboard/settings'
     | '/go/$id'
     | '/dashboard/'
     | '/dashboard/models/$modelId'
-    | '/dashboard/preview/$linkId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -158,12 +138,10 @@ export interface FileRouteTypes {
     | '/dashboard/admin'
     | '/dashboard/financeiro'
     | '/dashboard/modelos'
-    | '/dashboard/pagina'
     | '/dashboard/settings'
     | '/go/$id'
     | '/dashboard'
     | '/dashboard/models/$modelId'
-    | '/dashboard/preview/$linkId'
   id:
     | '__root__'
     | '/'
@@ -173,12 +151,10 @@ export interface FileRouteTypes {
     | '/dashboard/admin'
     | '/dashboard/financeiro'
     | '/dashboard/modelos'
-    | '/dashboard/pagina'
     | '/dashboard/settings'
     | '/go/$id'
     | '/dashboard/'
     | '/dashboard/models/$modelId'
-    | '/dashboard/preview/$linkId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -240,13 +216,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardSettingsRouteImport
       parentRoute: typeof DashboardRoute
     }
-    '/dashboard/pagina': {
-      id: '/dashboard/pagina'
-      path: '/pagina'
-      fullPath: '/dashboard/pagina'
-      preLoaderRoute: typeof DashboardPaginaRouteImport
-      parentRoute: typeof DashboardRoute
-    }
     '/dashboard/modelos': {
       id: '/dashboard/modelos'
       path: '/modelos'
@@ -268,13 +237,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardAdminRouteImport
       parentRoute: typeof DashboardRoute
     }
-    '/dashboard/preview/$linkId': {
-      id: '/dashboard/preview/$linkId'
-      path: '/preview/$linkId'
-      fullPath: '/dashboard/preview/$linkId'
-      preLoaderRoute: typeof DashboardPreviewLinkIdRouteImport
-      parentRoute: typeof DashboardRoute
-    }
     '/dashboard/models/$modelId': {
       id: '/dashboard/models/$modelId'
       path: '/models/$modelId'
@@ -289,22 +251,18 @@ interface DashboardRouteChildren {
   DashboardAdminRoute: typeof DashboardAdminRoute
   DashboardFinanceiroRoute: typeof DashboardFinanceiroRoute
   DashboardModelosRoute: typeof DashboardModelosRoute
-  DashboardPaginaRoute: typeof DashboardPaginaRoute
   DashboardSettingsRoute: typeof DashboardSettingsRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
   DashboardModelsModelIdRoute: typeof DashboardModelsModelIdRoute
-  DashboardPreviewLinkIdRoute: typeof DashboardPreviewLinkIdRoute
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardAdminRoute: DashboardAdminRoute,
   DashboardFinanceiroRoute: DashboardFinanceiroRoute,
   DashboardModelosRoute: DashboardModelosRoute,
-  DashboardPaginaRoute: DashboardPaginaRoute,
   DashboardSettingsRoute: DashboardSettingsRoute,
   DashboardIndexRoute: DashboardIndexRoute,
   DashboardModelsModelIdRoute: DashboardModelsModelIdRoute,
-  DashboardPreviewLinkIdRoute: DashboardPreviewLinkIdRoute,
 }
 
 const DashboardRouteWithChildren = DashboardRoute._addFileChildren(

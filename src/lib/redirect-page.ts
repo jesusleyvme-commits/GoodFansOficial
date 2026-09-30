@@ -32,12 +32,6 @@ export type RedirectPageData = {
    */
   photoUrl?: string | null;
   /**
-   * Pré-visualização do painel. Renderiza o mesmo HTML, mas sem destino no
-   * formulário, sem gravação e com uma tarja avisando. Existe para o preview
-   * não poder mentir sobre o que o visitante vai ver.
-   */
-  preview?: boolean;
-  /**
    * Recusa do servidor a ser mostrada no topo do formulário. Só aparece quando
    * o POST volta sem redirect, e o texto é fixo aqui: a validação é do banco e
    * este arquivo não recebe motivo do Postgres para virar HTML.
@@ -214,7 +208,6 @@ function renderGateForm(data: {
   collectEmail: boolean;
   collectPhone: boolean;
   privacyNote: string;
-  preview: boolean;
   error: string | null;
 }): string {
   const fields: string[] = [];
@@ -259,7 +252,7 @@ function renderGateForm(data: {
 
   if (fields.length === 0) return "";
 
-  return `<form class="gate" method="post" action="/go/${escapeAttribute(data.linkId)}"${data.preview ? ' data-preview="1"' : ""}>
+  return `<form class="gate" method="post" action="/go/${escapeAttribute(data.linkId)}">
 <input type="hidden" name="eventId" value="${escapeAttribute(data.eventId)}">
 ${data.error ? `<p class="form-error" role="alert">${escapeHtml(data.error)}</p>` : ""}
 ${fields.join("\n")}
@@ -374,7 +367,6 @@ export function renderRedirectPage(data: RedirectPageData): string {
   const href = escapeAttribute(destination);
   const title = escapeHtml(data.productName);
   const pixelId = normalizePixelId(data.pixelId);
-  const preview = data.preview === true;
 
   // O gate só existe se ao menos um campo estiver ligado. Sem nenhum, a página
   // é a âncora direta de sempre, que é mais rápida e não tem o que coletar.
@@ -395,52 +387,27 @@ export function renderRedirectPage(data: RedirectPageData): string {
         collectEmail: data.collectEmail === true,
         collectPhone: data.collectPhone === true,
         privacyNote,
-        preview,
         error: data.error ?? null,
       })
     : "";
 
-  // No preview o pixel é cortado de propósito. Se o creator abrir a
-  // pré-visualização de um link que já tem pixel e ele disparasse, entraria uma
-  // conversão real no relatório do anúncio — de um clique que foi só olhar a
-  // tela, e para um link que talvez nem exista mais.
-  const conversion =
-    pixelId && !preview
-      ? renderConversionScript({
-          pixelId,
-          valueEur: data.valueEur,
-          eventId: data.eventId,
-          // A mesma rota que serve a página recebe o envio do formulário em
-          // form-urlencoded e o clique em JSON. O POST separa os dois pelo
-          // content-type, então não é preciso uma rota nova.
-          trackUrl: `/go/${escapeAttribute(data.linkId)}`,
-          gate,
-        })
-      : "";
+  const conversion = pixelId
+    ? renderConversionScript({
+        pixelId,
+        valueEur: data.valueEur,
+        eventId: data.eventId,
+        // A mesma rota que serve a página recebe o envio do formulário em
+        // form-urlencoded e o clique em JSON. O POST separa os dois pelo
+        // content-type, então não é preciso uma rota nova.
+        trackUrl: `/go/${escapeAttribute(data.linkId)}`,
+        gate,
+      })
+    : "";
 
   // Com o gate, a âncora some e o destino não aparece em lugar nenhum do HTML.
   const callToAction = gate
     ? ""
     : `<a class="cta" id="cta" href="${href}" rel="noopener noreferrer">Entrar agora</a>`;
-
-  // No preview o destino aparece na tarja como link, e não escondido. O creator
-  // precisa sair do iframe para conferir a página como o visitante a vê — e é
-  // por isso que ela abre em outra aba, para ele não perder o construtor.
-  const ribbon = preview
-    ? `<div class="preview-ribbon">Pré-visualização — enviar o formulário aqui não grava nada e não conta como conversão. Destino real: <a href="/go/${escapeAttribute(data.linkId)}" target="_blank" rel="noopener">abrir o link</a></div>`
-    : "";
-
-  // No preview, o submit é bloqueado no navegador. Sem isso o creator testaria o
-  // botão e derrubaria dados de verdade na lista dele, achando que era rascunho.
-  const previewGuard = preview
-    ? `<script>
-document.addEventListener('submit',function(e){
- e.preventDefault();
- var b=document.getElementById('cta');
- if(b){var t=b.textContent;b.textContent='Nada foi enviado (preview)';setTimeout(function(){b.textContent=t},1600);}
-},true);
-</script>`
-    : "";
 
   // A foto vem pronta em URL absoluta do bucket público. `alt` vazio de
   // propósito: ao lado do nome do produto, um "foto da modelo" lido em voz alta
@@ -456,7 +423,6 @@ document.addEventListener('submit',function(e){
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#05060a">
 <meta name="robots" content="noindex,nofollow">
-${preview ? '<meta name="robots" content="noindex,nofollow,noarchive">' : ""}
 <title>${title}</title>
 <link rel="preconnect" href="https://connect.facebook.net" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -465,7 +431,6 @@ ${preview ? '<meta name="robots" content="noindex,nofollow,noarchive">' : ""}
 <style>${STYLES}</style>
 </head>
 <body>
-${ribbon}
 <main class="card">
   ${photo}
   <h1 class="title">${title}</h1>
@@ -475,7 +440,6 @@ ${ribbon}
   ${callToAction}
 </main>
 ${conversion}
-${previewGuard}
 </body>
 </html>`;
 }

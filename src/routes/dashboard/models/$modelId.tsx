@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, Check, Copy, Eye, Link2, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, Check, Copy, Link2, Plus, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 
 import { Button } from "@/components/button";
@@ -305,17 +305,6 @@ function ModelPage() {
                         </Button>
 
                         <EditLinkButton onClick={() => setEditingLinkId(link.id)} />
-
-                        <Button variant="secondary" size="sm" asChild>
-                          <Link
-                            to="/dashboard/preview/$linkId"
-                            params={{ linkId: link.id }}
-                            aria-label={`Pré-visualizar a página de ${link.product_name}`}
-                          >
-                            <Eye />
-                            Prévia
-                          </Link>
-                        </Button>
 
                         <Button
                           variant="secondary"
