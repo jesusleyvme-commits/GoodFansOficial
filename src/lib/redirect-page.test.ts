@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { escapeHtml, renderRedirectPage, renderUnavailablePage } from "@/lib/redirect-page";
+import {
+  DEFAULT_HEADLINE,
+  escapeHtml,
+  renderRedirectPage,
+  renderUnavailablePage,
+} from "@/lib/redirect-page";
 
 const LINK_ID = "75534c00-a4b8-42e6-970e-2a0933d1194b";
 const EVENT_ID = "463ee298-48dc-4005-818e-314e34030e14";
@@ -179,7 +184,178 @@ describe("renderRedirectPage: sem pixel", () => {
   });
 });
 
-describe("renderUnavailablePage", () => {
+describe("renderRedirectPage: gate de coleta", () => {
+  const gate = {
+    collectName: true,
+    collectEmail: true,
+    collectPhone: true,
+  };
+
+  it("sem nenhum campo ligado continua sendo a âncora direta", () => {
+    // Estado legado: link criado antes do gate não tem campo nenhum ligado, e
+    // precisa continuar indo direto para o destino.
+    const html = page();
+
+    expect(html).toContain('href="https://t.me/+abc"');
+    expect(html).not.toContain("<form");
+  });
+
+  it("com campo ligado mostra o formulário", () => {
+    const html = page(gate);
+
+    expect(html).toContain("<form");
+    expect(html).toContain('method="post"');
+  });
+
+  it("esconde o destino quando o gate está ligado", () => {
+    // A razão de o gate existir. Com o destino no HTML, abrir o código-fonte
+    // pularia a coleta, que é a única coisa que a tela faz.
+    const html = page(gate);
+
+    expect(html).not.toContain("https://t.me/+abc");
+  });
+
+  it("só mostra os campos que estão ligados", () => {
+    const soEmail = page({ collectEmail: true });
+
+    expect(soEmail).toContain('name="email"');
+    expect(soEmail).not.toContain('name="name"');
+    expect(soEmail).not.toContain('name="phone"');
+  });
+
+  it("todo campo ligado é obrigatório", () => {
+    const html = page(gate);
+    const campos = html.match(/<input class="input"[^>]*>/g) ?? [];
+
+    expect(campos).toHaveLength(3);
+    for (const campo of campos) expect(campo).toContain("required");
+  });
+
+  it("pede consentimento com checkbox desmarcado", () => {
+    // Pré-marcado não é consentimento: a LGPD exige manifestação livre, e um
+    // checkbox que já vem ligado é o oposto disso.
+    const html = page(gate);
+
+    expect(html).toContain('type="checkbox"');
+    expect(html).toContain('name="consent"');
+    expect(html).not.toMatch(/type="checkbox"[^>]*\schecked/);
+  });
+
+  it("leva o event_id no campo oculto, para ligar a coleta ao evento", () => {
+    expect(page(gate)).toContain(`name="eventId" value="${EVENT_ID}"`);
+  });
+
+  it("posta no próprio link, sem rota nova", () => {
+    expect(page(gate)).toContain(`action="/go/${LINK_ID}"`);
+  });
+
+  it("liga a conversão no submit, e não no click da âncora", () => {
+    const html = page(gate);
+
+    expect(html).toContain("c.form.addEventListener('submit',send);");
+    expect(html).not.toContain("c.addEventListener('click',send);");
+  });
+
+  it("o botão é do tipo submit para o form submits", () => {
+    expect(page(gate)).toContain('type="submit"');
+  });
+
+  it("usa autocomplete para o teclado do celular abrir certo", () => {
+    const html = page(gate);
+
+    expect(html).toContain('autocomplete="name"');
+    expect(html).toContain('autocomplete="email"');
+    expect(html).toContain('autocomplete="tel"');
+  });
+
+  it("esconde a marca quando showLogo é false", () => {
+    expect(page({ ...gate, showLogo: false })).not.toContain('class="mark"');
+    expect(page({ ...gate, showLogo: true })).toContain('class="mark"');
+  });
+
+  it("usa o texto do creator no lugar do padrão", () => {
+    const html = page({ ...gate, headline: "Bem-vindo", subhead: "Preencha abaixo" });
+
+    expect(html).toContain("Bem-vindo");
+    expect(html).toContain("Preencha abaixo");
+    expect(html).not.toContain(DEFAULT_HEADLINE);
+  });
+
+  it("volta ao padrão quando o texto do creator é vazio", () => {
+    // Null e string vazia significam "usa o padrão", para o creator poder
+    // limpar um campo e voltar ao texto do app.
+    expect(page({ ...gate, headline: "   " })).toContain(DEFAULT_HEADLINE);
+  });
+
+  it("mostra o texto de privacidade padrão quando o creator não escreve nada", () => {
+    expect(page(gate)).toContain("criptografada");
+  });
+});
+
+describe("renderRedirectPage: quem manda o texto do gate", () => {
+  const gate = { collectName: true, collectEmail: true, collectPhone: true };
+
+  // Headline, subhead e nota de privacidade saem de digitação do creator e
+  // entram direto no corpo do documento.
+  it("escapa HTML no headline", () => {
+    const html = page({ ...gate, headline: "<script>alert('x')</script>" });
+
+    expect(html).not.toContain("<script>alert");
+    expect(html).toContain("&lt;script&gt;");
+  });
+
+  it("escapa aspas no headline, para não fechar atributo", () => {
+    const html = page({ ...gate, headline: '" onmouseover="alert(1)' });
+
+    expect(html).not.toContain('onmouseover="alert(1)"');
+    expect(html).toContain("&quot;");
+  });
+
+  it("escapa HTML na nota de privacidade", () => {
+    const html = page({ ...gate, privacyNote: "<img src=x onerror=alert(1)>" });
+
+    expect(html).not.toContain("<img src=x");
+    expect(html).toContain("&lt;img");
+  });
+});
+
+describe("renderRedirectPage: preview", () => {
+  const gate = { collectName: true, collectEmail: true, collectPhone: true };
+
+  it("avisa que é preview, para ninguém confundir com o link real", () => {
+    expect(page({ ...gate, preview: true })).toContain("Pré-visualização");
+  });
+
+  it("bloqueia o envio no navegador", () => {
+    // Sem isto o creator clica no botão achando que é rascunho e suja a lista
+    // dele com coleta de teste.
+    expect(page({ ...gate, preview: true })).toContain("e.preventDefault()");
+  });
+
+  it("mostra o destino real, que é o que o creator quer conferir", () => {
+    expect(page({ ...gate, preview: true })).toContain("https://t.me/+abc");
+  });
+
+  it("não manda o pixel, para o preview não virar conversão no relatório", () => {
+    const html = page({ ...gate, preview: true, pixelId: "1593499121650270" });
+
+    expect(html).not.toContain("fbevents.js");
+    expect(html).not.toContain("sendBeacon");
+  });
+
+  it("tem o mesmo formulário da versão real", () => {
+    // Se o preview e a página real divergissem, o preview não serviria para
+    // nada. O unico extra é a tarja e o bloqueio de envio.
+    const real = page(gate);
+    const preview = page({ ...gate, preview: true });
+
+    for (const campo of ['name="name"', 'name="email"', 'name="phone"', 'name="consent"']) {
+      expect(preview).toContain(campo);
+      expect(real).toContain(campo);
+    }
+  });
+});
+
   it("não tem pixel nem beacon", () => {
     const html = renderUnavailablePage();
 
