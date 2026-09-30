@@ -356,6 +356,7 @@ describe("renderRedirectPage: preview", () => {
   });
 });
 
+describe("renderUnavailablePage", () => {
   it("não tem pixel nem beacon", () => {
     const html = renderUnavailablePage();
 
