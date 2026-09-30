@@ -13,9 +13,12 @@ export function readError(error: { message: string; code?: string } | null): str
   return error.message;
 }
 
+// `as const` é obrigatório aqui, não enfeite: o supabase-js só descobre as
+// colunas de retorno quando a string do select é um literal único. Montar a
+// lista com concatenação ou variável sem const faz o tipo virar string e a
+// consulta perder a checagem de coluna e de retorno.
 const LINK_SELECT =
-  "id, creator_id, model_id, product_name, destination_url, value_eur, created_at, " +
-  "show_logo, collect_name, collect_email, collect_phone, gate_headline, gate_subhead, privacy_note";
+  "id, creator_id, model_id, product_name, destination_url, value_eur, created_at, show_logo, collect_name, collect_email, collect_phone, gate_headline, gate_subhead, privacy_note" as const;
 
 export async function listLinksByModel(modelId: string): Promise<DeliveryLink[]> {
   const { data, error } = await supabase()
