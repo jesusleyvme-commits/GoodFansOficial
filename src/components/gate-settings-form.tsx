@@ -207,9 +207,9 @@ export function GateSettingsForm({ link, onSaved }: GateSettingsFormProps) {
             placeholder="Usamos seus dados apenas para liberar o acesso…"
           />
           <p className="text-xs leading-relaxed text-muted-foreground">
-            Say what you collect, why, and how to ask for deletion. Vazio usa o texto padrão do app.
-            Escrever promessa de conformidade que o produto não cumpre é problema do produto, não
-            do texto.
+            Diga o que é coletado, para que, e como pedir a exclusão. Vazio usa o texto padrão do
+            app. Prometer conformidade que o produto não cumpre é problema do produto, não do
+            texto.
           </p>
         </div>
 
