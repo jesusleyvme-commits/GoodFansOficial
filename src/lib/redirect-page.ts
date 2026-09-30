@@ -351,17 +351,63 @@ export function renderRedirectPage(data: RedirectPageData): string {
   const href = escapeAttribute(destination);
   const title = escapeHtml(data.productName);
   const pixelId = normalizePixelId(data.pixelId);
+  const preview = data.preview === true;
+
+  // O gate só existe se ao menos um campo estiver ligado. Sem nenhum, a página
+  // é a âncora direta de sempre, que é mais rápida e não tem o que coletar.
+  const gate = data.collectName === true || data.collectEmail === true || data.collectPhone === true;
+
+  const headline = escapeHtml(data.headline?.trim() || DEFAULT_HEADLINE);
+  const subhead = escapeHtml(data.subhead?.trim() || (gate ? "" : DEFAULT_SUBHEAD));
+  const privacyNote = data.privacyNote?.trim() || DEFAULT_PRIVACY_NOTE;
+
+  const form = gate
+    ? renderGateForm({
+        linkId: data.linkId,
+        eventId: data.eventId,
+        collectName: data.collectName === true,
+        collectEmail: data.collectEmail === true,
+        collectPhone: data.collectPhone === true,
+        privacyNote,
+        preview,
+      })
+    : "";
 
   const conversion = pixelId
     ? renderConversionScript({
         pixelId,
         valueEur: data.valueEur,
         eventId: data.eventId,
-        // A mesma rota que serve a página recebe o clique em POST. Sem rota
-        // nova: o GET entrega o conteúdo e o POST registra a conversão.
+        // A mesma rota que serve a página recebe o envio do formulário em
+        // form-urlencoded e o clique em JSON. O POST separa os dois pelo
+        // content-type, então não é preciso uma rota nova.
         trackUrl: `/go/${escapeAttribute(data.linkId)}`,
+        gate,
       })
     : "";
+
+  // Com o gate, a âncora some e o destino não aparece em lugar nenhum do HTML.
+  const callToAction = gate
+    ? ""
+    : `<a class="cta" id="cta" href="${href}" rel="noopener noreferrer">Entrar agora</a>`;
+
+  const ribbon = preview
+    ? `<div class="preview-ribbon">Pré-visualização — enviar o formulário aqui não grava nada e não conta como conversão. Destino real: <code>${href}</code></div>`
+    : "";
+
+  // No preview, o submit é bloqueado no navegador. Sem isso o creator testaria o
+  // botão e derrubaria dados de verdade na lista dele, achando que era rascunho.
+  const previewGuard = preview
+    ? `<script>
+document.addEventListener('submit',function(e){
+ e.preventDefault();
+ var b=document.getElementById('cta');
+ if(b){var t=b.textContent;b.textContent='Nada foi enviado (preview)';setTimeout(function(){b.textContent=t},1600);}
+},true);
+</script>`
+    : "";
+
+  const mark = data.showLogo === false ? "" : `<div class="mark"><span></span></div>`;
 
   return `<!doctype html>
 <html lang="pt-BR">
@@ -370,6 +416,7 @@ export function renderRedirectPage(data: RedirectPageData): string {
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#05060a">
 <meta name="robots" content="noindex,nofollow">
+${preview ? '<meta name="robots" content="noindex,nofollow,noarchive">' : ""}
 <title>${title}</title>
 <link rel="preconnect" href="https://connect.facebook.net" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -378,14 +425,17 @@ export function renderRedirectPage(data: RedirectPageData): string {
 <style>${STYLES}</style>
 </head>
 <body>
+${ribbon}
 <main class="card">
-  <div class="mark"><span></span></div>
+  ${mark}
   <p class="product">${title}</p>
-  <h1 class="title">Seu acesso está liberado</h1>
-  <p class="sub">Clique abaixo para entrar.</p>
-  <a class="cta" id="cta" href="${href}" rel="noopener noreferrer">Entrar agora</a>
+  <h1 class="title">${headline}</h1>
+  ${subhead ? `<p class="sub">${subhead}</p>` : ""}
+  ${form}
+  ${callToAction}
 </main>
 ${conversion}
+${previewGuard}
 </body>
 </html>`;
 }
