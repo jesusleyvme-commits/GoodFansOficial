@@ -23,7 +23,8 @@ export function publicAvatarUrl(
 ): string | null {
   const clean = path?.trim();
   if (!clean) return null;
-  if (clean.startsWith("/") || clean.includes("..") || /^[a-z][a-z0-9+.-]*:/i.test(clean)) return null;
+  if (clean.startsWith("/") || clean.includes("..") || /^[a-z][a-z0-9+.-]*:/i.test(clean))
+    return null;
 
   const base = supabaseUrl.replace(/\/+$/, "");
   return `${base}/storage/v1/object/public/${AVATAR_BUCKET}/${clean}`;

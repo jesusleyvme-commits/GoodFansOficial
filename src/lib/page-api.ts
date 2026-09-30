@@ -43,7 +43,8 @@ export async function getPageSettings(): Promise<PageSettings> {
   const { data, error } = await supabase().rpc("get_page_settings");
   if (error) throw new Error(readError(error));
 
-  const row = data?.[0] as Database["public"]["Functions"]["get_page_settings"]["Returns"][0] | undefined;
+  const row = data?.[0] as
+    Database["public"]["Functions"]["get_page_settings"]["Returns"][0] | undefined;
   if (!row) return DEFAULT_PAGE_SETTINGS;
 
   return {

@@ -50,7 +50,10 @@ function LinkPreview() {
       }
       // A página é global, mas o preview é de um link: é do link que saem o nome
       // do produto, o destino e a foto da modelo.
-      const [pageSettings, owner] = await Promise.all([getPageSettings(), getModel(found.model_id)]);
+      const [pageSettings, owner] = await Promise.all([
+        getPageSettings(),
+        getModel(found.model_id),
+      ]);
       setSettings(pageSettings);
       setModel(owner);
     } catch {

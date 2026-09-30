@@ -281,7 +281,11 @@ function ModelPage() {
                         </p>
                         <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground/80">
                           <span>{formatEuro(link.value_eur)}</span>
-                          <span>{model.meta_pixel_id ? `Pixel ${model.meta_pixel_id}` : "Modelo sem pixel"}</span>
+                          <span>
+                            {model.meta_pixel_id
+                              ? `Pixel ${model.meta_pixel_id}`
+                              : "Modelo sem pixel"}
+                          </span>
                         </div>
 
                         <div className="mt-3">
