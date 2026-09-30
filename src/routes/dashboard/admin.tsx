@@ -149,7 +149,7 @@ function AdminPage() {
       <Button variant="secondary" size="sm" asChild className="-ml-2">
         <Link to="/dashboard">
           <ArrowLeft />
-          Voltar para modelos
+          Voltar para o painel
         </Link>
       </Button>
 

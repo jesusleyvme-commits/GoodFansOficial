@@ -169,7 +169,7 @@ function ModelPage() {
     return (
       <div className="space-y-6">
         <Button variant="ghost" size="sm" asChild>
-          <Link to="/dashboard">
+          <Link to="/dashboard/modelos">
             <ArrowLeft />
             Modelos
           </Link>
@@ -197,7 +197,7 @@ function ModelPage() {
             avatar e o "Voltar para modelos" à direita. Ficou só o da direita,
             que é o único que diz para onde vai. */}
         <Button variant="secondary" size="sm" asChild>
-          <Link to="/dashboard">
+          <Link to="/dashboard/modelos">
             <ArrowLeft />
             Voltar para modelos
           </Link>

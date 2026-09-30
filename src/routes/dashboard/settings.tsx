@@ -70,7 +70,7 @@ function SettingsPage() {
     <div className="mx-auto w-full max-w-3xl space-y-5">
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="sm" asChild>
-          <Link to="/dashboard" aria-label="Voltar para modelos">
+          <Link to="/dashboard" aria-label="Voltar para o painel">
             <ArrowLeft />
           </Link>
         </Button>

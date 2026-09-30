@@ -85,7 +85,7 @@ function LinkPreview() {
     <div className="space-y-5">
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="sm" asChild>
-          <Link to="/dashboard" aria-label="Voltar para modelos">
+          <Link to="/dashboard/modelos" aria-label="Voltar para modelos">
             <ArrowLeft />
           </Link>
         </Button>
