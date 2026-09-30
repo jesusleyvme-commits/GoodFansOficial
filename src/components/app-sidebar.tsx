@@ -1,6 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { LayoutDashboard, Shapes, Wallet, X } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Logo } from "@/components/logo";
 import { UserMenu } from "@/components/user-menu";
@@ -155,11 +155,13 @@ export function AppSidebar({
               <Link
                 key={item.to}
                 to={item.to}
-                // `activeOptions.exact` evita o item "Modelos" ficar marcado
-                // quando a pessoa está na página de um modelo — a sub-página tem
-                // outro item, e dois marcados ao mesmo tempo não indica onde
-                // ela está.
-                activeOptions={{ exact: item.to === "/dashboard" }}                activeProps={{ className: "bg-white/[0.07] text-foreground" }}
+                // `activeOptions.exact` evita o item "Dashboard" ficar marcado
+                // quando a pessoa está no Financeiro ou em Modelos. Sem isso os
+                // três iam ficar acesos ao mesmo tempo, já que `/dashboard` é o
+                // prefixo de todas — e três abas marcadas não dizem onde ela
+                // está.
+                activeOptions={{ exact: true }}
+                activeProps={{ className: "bg-white/[0.07] text-foreground" }}
                 className="flex items-center gap-3 rounded-input px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-white/[0.05] hover:text-foreground"
               >
                 <Icon className="size-4 shrink-0" />
@@ -190,7 +192,35 @@ export function AppSidebar({
   );
 }
 
-/** Botão de três traços que abre e fecha o menu lateral. */
+/**
+ * Acompanha uma media query.
+ *
+ * O objetivo de largura do Tailwind e o do CSS precisam concordar, senão o
+ * JavaScript acha que a tela é larga enquanto o navegador esconde a barra. Por
+ * isso o mesmo `768px` aparece aqui e no `md:` das classes.
+ */
+function useMediaQuery(query: string): boolean {
+  const [matches, setMatches] = useState(() =>
+    typeof window === "undefined" ? false : window.matchMedia(query).matches,
+  );
+
+  useEffect(() => {
+    const list = window.matchMedia(query);
+    const onChange = (event: MediaQueryListEvent) => setMatches(event.matches);
+
+    setMatches(list.matches);
+    list.addEventListener("change", onChange);
+    return () => list.removeEventListener("change", onChange);
+  }, [query]);
+
+  return matches;
+}
+
+/**
+ * Botão de três traços. Só existe abaixo de `md`: na tela larga a barra já está
+ * sempre aberta, e um botão que "abre" algo que não fecha seria um controle sem
+ * efeito.
+ */
 export function SidebarToggle({
   open,
   onOpenChange,
@@ -205,7 +235,7 @@ export function SidebarToggle({
       aria-label={open ? "Fechar menu" : "Abrir menu"}
       aria-expanded={open}
       aria-controls="menu-lateral"
-      className="grid size-10 shrink-0 cursor-pointer place-items-center rounded-input text-muted-foreground transition-colors hover:bg-white/[0.06] hover:text-foreground focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:outline-none"
+      className="grid size-10 shrink-0 cursor-pointer place-items-center rounded-input text-muted-foreground transition-colors hover:bg-white/[0.06] hover:text-foreground focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:outline-none md:hidden"
     >
       <svg
         viewBox="0 0 24 24"

@@ -67,7 +67,9 @@ function DashboardLayout() {
   const waiting = profile !== null && isWaitingForApproval(profile);
 
   return (
-    <div className="min-h-dvh bg-gradient-brand-soft">
+    // `md:pl-72` reserva a largura da barra. A barra é `fixed`, então ela sai do
+    // fluxo e o conteúdo passaria por baixo dela sem este recuo.
+    <div className="min-h-dvh bg-gradient-brand-soft md:pl-72">
       <header className="sticky top-0 z-30 border-b border-white/[0.06] bg-gradient-brand-soft/90 backdrop-blur-md">
         <div className="mx-auto flex h-16 w-full max-w-5xl items-center gap-3 px-4 sm:px-6">
           <SidebarToggle open={menuAberto} onOpenChange={setMenuAberto} />
