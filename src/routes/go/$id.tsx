@@ -75,6 +75,7 @@ async function submitGateForm(linkId: string, raw: string): Promise<Response> {
         // Um id novo: o anterior já foi recusado e não pode virar evento.
         eventId: crypto.randomUUID(),
         error: GATE_REFUSED,
+        photoUrl: link.photoUrl,
         ...link.gate,
       }),
       422,
@@ -166,7 +167,7 @@ export const Route = createFileRoute("/go/$id")({
             linkId: params.id,
             // Um id por visita, usado nos dois sinais para a Meta deduplicar.
             eventId: crypto.randomUUID(),
-            showLogo: link.gate.showLogo,
+            photoUrl: link.photoUrl,
             collectName: link.gate.collectName,
             collectEmail: link.gate.collectEmail,
             collectPhone: link.gate.collectPhone,

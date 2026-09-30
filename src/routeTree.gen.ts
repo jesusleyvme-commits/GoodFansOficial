@@ -16,6 +16,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
 import { Route as GoIdRouteImport } from './routes/go/$id'
 import { Route as DashboardSettingsRouteImport } from './routes/dashboard/settings'
+import { Route as DashboardPaginaRouteImport } from './routes/dashboard/pagina'
 import { Route as DashboardModelosRouteImport } from './routes/dashboard/modelos'
 import { Route as DashboardFinanceiroRouteImport } from './routes/dashboard/financeiro'
 import { Route as DashboardAdminRouteImport } from './routes/dashboard/admin'
@@ -57,6 +58,11 @@ const DashboardSettingsRoute = DashboardSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardPaginaRoute = DashboardPaginaRouteImport.update({
+  id: '/pagina',
+  path: '/pagina',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardModelosRoute = DashboardModelosRouteImport.update({
   id: '/modelos',
   path: '/modelos',
@@ -91,6 +97,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/admin': typeof DashboardAdminRoute
   '/dashboard/financeiro': typeof DashboardFinanceiroRoute
   '/dashboard/modelos': typeof DashboardModelosRoute
+  '/dashboard/pagina': typeof DashboardPaginaRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/go/$id': typeof GoIdRoute
   '/dashboard/': typeof DashboardIndexRoute
@@ -104,6 +111,7 @@ export interface FileRoutesByTo {
   '/dashboard/admin': typeof DashboardAdminRoute
   '/dashboard/financeiro': typeof DashboardFinanceiroRoute
   '/dashboard/modelos': typeof DashboardModelosRoute
+  '/dashboard/pagina': typeof DashboardPaginaRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/go/$id': typeof GoIdRoute
   '/dashboard': typeof DashboardIndexRoute
@@ -119,6 +127,7 @@ export interface FileRoutesById {
   '/dashboard/admin': typeof DashboardAdminRoute
   '/dashboard/financeiro': typeof DashboardFinanceiroRoute
   '/dashboard/modelos': typeof DashboardModelosRoute
+  '/dashboard/pagina': typeof DashboardPaginaRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/go/$id': typeof GoIdRoute
   '/dashboard/': typeof DashboardIndexRoute
@@ -135,6 +144,7 @@ export interface FileRouteTypes {
     | '/dashboard/admin'
     | '/dashboard/financeiro'
     | '/dashboard/modelos'
+    | '/dashboard/pagina'
     | '/dashboard/settings'
     | '/go/$id'
     | '/dashboard/'
@@ -148,6 +158,7 @@ export interface FileRouteTypes {
     | '/dashboard/admin'
     | '/dashboard/financeiro'
     | '/dashboard/modelos'
+    | '/dashboard/pagina'
     | '/dashboard/settings'
     | '/go/$id'
     | '/dashboard'
@@ -162,6 +173,7 @@ export interface FileRouteTypes {
     | '/dashboard/admin'
     | '/dashboard/financeiro'
     | '/dashboard/modelos'
+    | '/dashboard/pagina'
     | '/dashboard/settings'
     | '/go/$id'
     | '/dashboard/'
@@ -228,6 +240,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardSettingsRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/pagina': {
+      id: '/dashboard/pagina'
+      path: '/pagina'
+      fullPath: '/dashboard/pagina'
+      preLoaderRoute: typeof DashboardPaginaRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/modelos': {
       id: '/dashboard/modelos'
       path: '/modelos'
@@ -270,6 +289,7 @@ interface DashboardRouteChildren {
   DashboardAdminRoute: typeof DashboardAdminRoute
   DashboardFinanceiroRoute: typeof DashboardFinanceiroRoute
   DashboardModelosRoute: typeof DashboardModelosRoute
+  DashboardPaginaRoute: typeof DashboardPaginaRoute
   DashboardSettingsRoute: typeof DashboardSettingsRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
   DashboardModelsModelIdRoute: typeof DashboardModelsModelIdRoute
@@ -280,6 +300,7 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardAdminRoute: DashboardAdminRoute,
   DashboardFinanceiroRoute: DashboardFinanceiroRoute,
   DashboardModelosRoute: DashboardModelosRoute,
+  DashboardPaginaRoute: DashboardPaginaRoute,
   DashboardSettingsRoute: DashboardSettingsRoute,
   DashboardIndexRoute: DashboardIndexRoute,
   DashboardModelsModelIdRoute: DashboardModelsModelIdRoute,
