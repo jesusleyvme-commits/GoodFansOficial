@@ -344,13 +344,6 @@ button.cta{
 button.cta:hover{filter:brightness(1.1)}
 button.cta:active{transform:translateY(1px)}
 button.cta:focus-visible{outline:2px solid #93c5fd;outline-offset:3px}
-.preview-ribbon{
-  position:fixed;top:0;left:0;right:0;z-index:10;
-  padding:9px 16px;text-align:center;
-  font-size:.75rem;font-weight:600;letter-spacing:.02em;color:#7c2d12;
-  background:#fed7aa;border-bottom:1px solid #fdba74;
-}
-.preview-ribbon a{color:#7c2d12;text-decoration:underline;font-weight:700}
 `;
 
 /**
