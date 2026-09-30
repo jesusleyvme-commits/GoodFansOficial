@@ -2,7 +2,10 @@ import { describe, expect, it } from "vitest";
 
 import { META_TOKEN_MAX, META_TOKEN_MIN, normalizeMetaToken } from "@/lib/meta-token";
 
-const TOKEN = "EAABwzLixnjYBO7ZBqZBmZC1OnZC3ZBqZBmZC1OnZC3ZBqZBmZC1OnZC3ZB";
+// Sem forma de token real de propósito: um fixture com cara de `EAA...` no
+// repositório treina quem lê a ignorar o aviso de um scanner de segredo — que
+// é exatamente o que acontece quando aparece um verdadeiro.
+const TOKEN = "placeholder-de-teste-que-nao-e-um-token-real-0000000000";
 
 describe("normalizeMetaToken", () => {
   it("aceita um token do Graph API", () => {
