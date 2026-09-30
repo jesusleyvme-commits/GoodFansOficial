@@ -311,6 +311,25 @@ export type Database = {
         };
         Returns: boolean;
       };
+      /**
+       * Conversões, envios à Meta e coletas por link. Só do creator: a posse é
+       * conferida com auth.uid() dentro da função. Receita não vem aqui — é
+       * contagem × o valor que o creator configurou no link.
+       */
+      finance_summary: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          link_id: string;
+          model_id: string;
+          product_name: string;
+          value_eur: number | null;
+          conversions: number;
+          sent_to_meta: number;
+          leads: number;
+          first_conversion_at: string | null;
+          last_conversion_at: string | null;
+        }[];
+      };
       /** Administrador da instância. Lido no banco para o menu confiar nele. */
       is_admin: {
         Args: Record<PropertyKey, never>;
