@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, Check, Copy, Link2, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, Check, Copy, Eye, Link2, Plus, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 
 import { Button } from "@/components/button";
@@ -25,25 +25,6 @@ export const Route = createFileRoute("/dashboard/models/$modelId")({
   // genérico e a aba não fica pulando enquanto os dados chegam.
   head: ({ params }) => pageHead({ title: "Links", path: `/dashboard/models/${params.modelId}` }),
 });
-
-/**
- * Como o link está coletando, em uma frase.
- *
- * Sem isso o painel só mostrava o nome e o valor, e não dava para saber de
- * relance se um link está pedindo dados ao visitante ou indo direto para o
- * destino — que é a diferença entre um link de indicação e uma lista de
- * contatos.
- */
-function gateSummary(link: DeliveryLink): string {
-  const campos = [
-    link.collect_name && "nome",
-    link.collect_email && "e-mail",
-    link.collect_phone && "telefone",
-  ].filter(Boolean);
-
-  if (campos.length === 0) return "Sem formulário";
-  return `Pede ${campos.join(", ")}`;
-}
 
 function ModelPage() {
   const { modelId } = Route.useParams();
@@ -300,12 +281,7 @@ function ModelPage() {
                         </p>
                         <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground/80">
                           <span>{formatEuro(link.value_eur)}</span>
-                          <span>
-                            {model.meta_pixel_id
-                              ? `Pixel ${model.meta_pixel_id}`
-                              : "Modelo sem pixel"}
-                          </span>
-                          <span>{gateSummary(link)}</span>
+                          <span>{model.meta_pixel_id ? `Pixel ${model.meta_pixel_id}` : "Modelo sem pixel"}</span>
                         </div>
 
                         <div className="mt-3">
@@ -326,14 +302,15 @@ function ModelPage() {
 
                         <EditLinkButton onClick={() => setEditingLinkId(link.id)} />
 
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          onClick={() => setGateLinkId(link.id)}
-                          aria-label={`Página de entrega de ${link.product_name}`}
-                        >
-                          <SlidersHorizontal />
-                          Página
+                        <Button variant="secondary" size="sm" asChild>
+                          <Link
+                            to="/dashboard/preview/$linkId"
+                            params={{ linkId: link.id }}
+                            aria-label={`Pré-visualizar a página de ${link.product_name}`}
+                          >
+                            <Eye />
+                            Prévia
+                          </Link>
                         </Button>
 
                         <Button
@@ -371,18 +348,6 @@ function ModelPage() {
                             current.map((item) => (item.id === saved.id ? saved : item)),
                           );
                           setEditingLinkId(null);
-                        }}
-                      />
-                    )}
-
-                    {gateLinkId === link.id && (
-                      <GateSettingsForm
-                        link={link}
-                        onSaved={async (saved) => {
-                          setLinks((current) =>
-                            current.map((item) => (item.id === saved.id ? saved : item)),
-                          );
-                          setGateLinkId(null);
                         }}
                       />
                     )}

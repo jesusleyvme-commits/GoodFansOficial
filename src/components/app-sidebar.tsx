@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, Shapes, Wallet, X } from "lucide-react";
+import { LayoutDashboard, PanelTop, Shapes, Wallet, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { Logo } from "@/components/logo";
@@ -23,8 +23,9 @@ type NavItem = {
  */
 const ITEMS: NavItem[] = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/dashboard/financeiro", label: "Financeiro", icon: Wallet },
   { to: "/dashboard/modelos", label: "Modelos", icon: Shapes },
+  { to: "/dashboard/pagina", label: "Página", icon: PanelTop },
+  { to: "/dashboard/financeiro", label: "Financeiro", icon: Wallet },
 ];
 
 type AppSidebarProps = {
@@ -44,7 +45,7 @@ type AppSidebarProps = {
  * painel é deslocado para a direita. Abaixo disso vira gaveta, porque 288px de
  * menu fixo em uma tela de celular deixa um palmo de conteúdo.
  *
- * A distinction é feita com `matchMedia` e não com classes CSS porque o `inert`
+ * A distinção é feita com `matchMedia` e não com classes CSS porque o `inert`
  * e o `aria` precisam da largura real: um menu marcado como `inert` por estar
  * "fechado" no estado enquanto está visível na tela é um menu que ninguém
  * consegue usar com o teclado.
