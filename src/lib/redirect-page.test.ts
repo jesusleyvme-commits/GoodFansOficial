@@ -179,7 +179,7 @@ describe("renderRedirectPage: sem pixel", () => {
   it("ainda entrega a página, porque o acesso não depende do pixel", () => {
     const html = page({ pixelId: null });
 
-    expect(html).toContain("Seu acesso está liberado");
+    expect(html).toContain(DEFAULT_HEADLINE);
     expect(html).toContain('href="https://t.me/+abc"');
   });
 });
