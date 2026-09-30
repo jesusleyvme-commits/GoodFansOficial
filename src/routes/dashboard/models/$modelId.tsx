@@ -1,11 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, Check, Copy, Link2, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, Check, Copy, Link2, Plus, SlidersHorizontal, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 
 import { Button } from "@/components/button";
 import { DeleteByName } from "@/components/delete-by-name";
 import { Card, CardDescription, CardHeader, CardTitle, Label } from "@/components/card";
 import { Feedback } from "@/components/feedback";
+import { GateSettingsForm } from "@/components/gate-settings-form";
 import { Input } from "@/components/input";
 import { EditLinkButton, LinkEditor } from "@/components/link-editor";
 import { MetaTestButton } from "@/components/meta-test-button";
@@ -25,6 +26,25 @@ export const Route = createFileRoute("/dashboard/models/$modelId")({
   // genérico e a aba não fica pulando enquanto os dados chegam.
   head: ({ params }) => pageHead({ title: "Links", path: `/dashboard/models/${params.modelId}` }),
 });
+
+/**
+ * Como o link está coletando, em uma frase.
+ *
+ * Sem isso o painel só mostrava o nome e o valor, e não dava para saber de
+ * relance se um link está pedindo dados ao visitante ou indo direto para o
+ * destino — que é a diferença entre um link de indicação e uma lista de
+ * contatos.
+ */
+function gateSummary(link: DeliveryLink): string {
+  const campos = [
+    link.collect_name && "nome",
+    link.collect_email && "e-mail",
+    link.collect_phone && "telefone",
+  ].filter(Boolean);
+
+  if (campos.length === 0) return "Sem formulário";
+  return `Pede ${campos.join(", ")}`;
+}
 
 function ModelPage() {
   const { modelId } = Route.useParams();
@@ -47,6 +67,7 @@ function ModelPage() {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [deletingLinkId, setDeletingLinkId] = useState<string | null>(null);
   const [editingLinkId, setEditingLinkId] = useState<string | null>(null);
+  const [gateLinkId, setGateLinkId] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
     // Reabrir o carregamento é o que evita a troca de modelo mostrar dados
@@ -286,6 +307,7 @@ function ModelPage() {
                               ? `Pixel ${model.meta_pixel_id}`
                               : "Modelo sem pixel"}
                           </span>
+                          <span>{gateSummary(link)}</span>
                         </div>
 
                         <div className="mt-3">
@@ -305,6 +327,16 @@ function ModelPage() {
                         </Button>
 
                         <EditLinkButton onClick={() => setEditingLinkId(link.id)} />
+
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => setGateLinkId(link.id)}
+                          aria-label={`Página de entrega de ${link.product_name}`}
+                        >
+                          <SlidersHorizontal />
+                          Página
+                        </Button>
 
                         <Button
                           variant="secondary"
@@ -341,6 +373,18 @@ function ModelPage() {
                             current.map((item) => (item.id === saved.id ? saved : item)),
                           );
                           setEditingLinkId(null);
+                        }}
+                      />
+                    )}
+
+                    {gateLinkId === link.id && (
+                      <GateSettingsForm
+                        link={link}
+                        onSaved={async (saved) => {
+                          setLinks((current) =>
+                            current.map((item) => (item.id === saved.id ? saved : item)),
+                          );
+                          setGateLinkId(null);
                         }}
                       />
                     )}
