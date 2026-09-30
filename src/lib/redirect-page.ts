@@ -110,12 +110,17 @@ function pixelValueArgs(valueEur: number | null): string {
  *
  * O `sendBeacon` vai antes do `fbq` de propósito: ele sobrevive à saída da
  * página, que é o que acontece a seguir. O clique não espera nenhum dos dois.
+ *
+ * Com o gate ligado, o Purchase dispara no `submit` do formulário em vez do
+ * `click` da âncora. É o mesmo instante: o visitante decide entrar empurrando o
+ * botão, e é ali que a conversão acontece.
  */
 function renderConversionScript(input: {
   pixelId: string;
   valueEur: number | null;
   eventId: string;
   trackUrl: string;
+  gate: boolean;
 }): string {
   const eventId = jsString(input.eventId);
   const trackUrl = jsString(input.trackUrl);
@@ -123,7 +128,7 @@ function renderConversionScript(input: {
 
   return `<script>
 (function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
- n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;
+ n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(f._fbq)f._fbq=n;n.push=n;
  n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
  t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}
 (window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
@@ -132,15 +137,17 @@ fbq('init',${pixelId});
  var c=document.getElementById('cta');
  if(!c||c.dataset.conversionSent)return;
  c.dataset.conversionSent='1';
- c.addEventListener('click',function(){
+ var send=function(){
   var body=new Blob([JSON.stringify({eventId:${eventId}})],{type:'application/json'});
   if(navigator.sendBeacon){navigator.sendBeacon(${trackUrl},body);}
   else{fetch(${trackUrl},{method:'POST',body:body,keepalive:true,headers:{'Content-Type':'application/json'}}).catch(function(){});}
   fbq('track','Purchase'${pixelValueArgs(input.valueEur)},{eventID:${eventId}});
- });
+ };
+ ${input.gate ? "c.form.addEventListener('submit',send);" : "c.addEventListener('click',send);"}
 })();
 </script>`;
 }
+
 
 const STYLES = `
 *,*::before,*::after{box-sizing:border-box}
