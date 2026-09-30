@@ -16,6 +16,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
 import { Route as GoIdRouteImport } from './routes/go/$id'
 import { Route as DashboardSettingsRouteImport } from './routes/dashboard/settings'
+import { Route as DashboardFinanceiroRouteImport } from './routes/dashboard/financeiro'
 import { Route as DashboardAdminRouteImport } from './routes/dashboard/admin'
 import { Route as DashboardPreviewLinkIdRouteImport } from './routes/dashboard/preview/$linkId'
 import { Route as DashboardModelsModelIdRouteImport } from './routes/dashboard/models/$modelId'
@@ -55,6 +56,11 @@ const DashboardSettingsRoute = DashboardSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardFinanceiroRoute = DashboardFinanceiroRouteImport.update({
+  id: '/financeiro',
+  path: '/financeiro',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardAdminRoute = DashboardAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -77,6 +83,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/dashboard/admin': typeof DashboardAdminRoute
+  '/dashboard/financeiro': typeof DashboardFinanceiroRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/go/$id': typeof GoIdRoute
   '/dashboard/': typeof DashboardIndexRoute
@@ -88,6 +95,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/dashboard/admin': typeof DashboardAdminRoute
+  '/dashboard/financeiro': typeof DashboardFinanceiroRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/go/$id': typeof GoIdRoute
   '/dashboard': typeof DashboardIndexRoute
@@ -101,6 +109,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/dashboard/admin': typeof DashboardAdminRoute
+  '/dashboard/financeiro': typeof DashboardFinanceiroRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/go/$id': typeof GoIdRoute
   '/dashboard/': typeof DashboardIndexRoute
@@ -115,6 +124,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/reset-password'
     | '/dashboard/admin'
+    | '/dashboard/financeiro'
     | '/dashboard/settings'
     | '/go/$id'
     | '/dashboard/'
@@ -126,6 +136,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/reset-password'
     | '/dashboard/admin'
+    | '/dashboard/financeiro'
     | '/dashboard/settings'
     | '/go/$id'
     | '/dashboard'
@@ -138,6 +149,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/reset-password'
     | '/dashboard/admin'
+    | '/dashboard/financeiro'
     | '/dashboard/settings'
     | '/go/$id'
     | '/dashboard/'
@@ -204,6 +216,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardSettingsRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/financeiro': {
+      id: '/dashboard/financeiro'
+      path: '/financeiro'
+      fullPath: '/dashboard/financeiro'
+      preLoaderRoute: typeof DashboardFinanceiroRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/admin': {
       id: '/dashboard/admin'
       path: '/admin'
@@ -230,6 +249,7 @@ declare module '@tanstack/react-router' {
 
 interface DashboardRouteChildren {
   DashboardAdminRoute: typeof DashboardAdminRoute
+  DashboardFinanceiroRoute: typeof DashboardFinanceiroRoute
   DashboardSettingsRoute: typeof DashboardSettingsRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
   DashboardModelsModelIdRoute: typeof DashboardModelsModelIdRoute
@@ -238,6 +258,7 @@ interface DashboardRouteChildren {
 
 const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardAdminRoute: DashboardAdminRoute,
+  DashboardFinanceiroRoute: DashboardFinanceiroRoute,
   DashboardSettingsRoute: DashboardSettingsRoute,
   DashboardIndexRoute: DashboardIndexRoute,
   DashboardModelsModelIdRoute: DashboardModelsModelIdRoute,
