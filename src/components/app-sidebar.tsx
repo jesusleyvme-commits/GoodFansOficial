@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, Shapes, Settings2, ShieldCheck, X } from "lucide-react";
+import { LayoutDashboard, Shapes, Wallet, X } from "lucide-react";
 import { useEffect, useRef } from "react";
 
 import { Logo } from "@/components/logo";
@@ -10,19 +10,21 @@ type NavItem = {
   to: string;
   label: string;
   icon: typeof Shapes;
-  /** Só o administrador vê a área de pessoas. O banco confere de novo. */
-  adminOnly?: boolean;
 };
 
 /**
- * A ordem é a que o uso pede: quanto entra por mês primeiro, depois o que se
- * gerencia, e por último o ajuste da conta.
+ * A ordem é a que o uso pede: o resumo do negócio, o dinheiro, e o que se
+ * gerencia.
+ *
+ * `Configurações` e `Usuários` não entram aqui de propósito. São o mesmo
+ * destino para todo mundo e mudam uma vez a cada poucos meses, enquanto these
+ * três são o trabalho do dia. Deixá-los só no menu do avatar também evita duas
+ * entradas para a mesma tela discordarem sobre qual é a aba ativa.
  */
 const ITEMS: NavItem[] = [
-  { to: "/dashboard/financeiro", label: "Dashboard financeiro", icon: LayoutDashboard },
-  { to: "/dashboard", label: "Modelos", icon: Shapes },
-  { to: "/dashboard/admin", label: "Usuários", icon: ShieldCheck, adminOnly: true },
-  { to: "/dashboard/settings", label: "Configurações", icon: Settings2 },
+  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/dashboard/financeiro", label: "Financeiro", icon: Wallet },
+  { to: "/dashboard/modelos", label: "Modelos", icon: Shapes },
 ];
 
 type AppSidebarProps = {
@@ -91,7 +93,7 @@ export function AppSidebar({
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [open, onOpenChange]);
 
-  const visiveis = ITEMS.filter((item) => !item.adminOnly || isAdmin);
+  const visiveis = ITEMS;
 
   return (
     <>
