@@ -65,8 +65,19 @@ export function AppSidebar({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 
-  // Escape fecha, e o foco vai para o botão que abre. Sem isso o foco fica preso
-  // num elemento que sumiu da tela e o teclado anda só pelo documento de baixo.
+  // `inert` é o que tira o menu do alcance do teclado quando fechado. O
+  // atributo é o padrão correto para "existe no DOM, mas não está na tela"; sem
+  // ele, o Tab entraria num menu invisível e um leitor de tela narraria os
+  // links de um menu que ninguém está vendo.
+  //
+  // Feito por efeito, e não como atributo JSX, porque o `inert` só chegou nos
+  // tipos do React 19.1 e o projeto compila contra uma versão anterior.
+  useEffect(() => {
+    if (painel.current) painel.current.inert = !open;
+  }, [open]);
+
+  // Escape fecha, e o foco vai para o próprio painel. Sem isso o foco fica preso
+  // num elemento que saiu da tela e o teclado anda só pelo documento de baixo.
   useEffect(() => {
     if (!open) return;
 
@@ -100,14 +111,13 @@ export function AppSidebar({
         id="menu-lateral"
         role="dialog"
         aria-label="Menu do painel"
-        // `inert` quando fechado é o que tira o menu do alcance do teclado.
-        // O atributo é o padrão correto para "existe no DOM, mas não está na
-        // tela"; sem ele, um leitor de tela narraria os links de um menu que
-        // ninguém está vendo.
-        {...(open ? {} : { inert: "" })}
+        tabIndex={-1}
         className={cn(
           "fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r border-white/[0.06] bg-[#0b0b12] transition-transform duration-200",
           open ? "translate-x-0" : "-translate-x-full",
+          // O foco no painel é o primeiro destino do teclado; o contorno do
+          // `focus-visible` não deve aparecer para quem só abriu o menu.
+          "focus:outline-none",
         )}
       >
         <div className="flex h-16 shrink-0 items-center justify-between gap-2 px-4">
