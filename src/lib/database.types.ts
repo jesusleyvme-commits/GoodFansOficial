@@ -316,7 +316,7 @@ export type Database = {
        * funções de decifragem são inacessíveis ao anon.
        */
       list_submissions: {
-        Args: { p_link_id: string };
+        Args: { p_link_id: string; p_limit?: number };
         Returns: {
           id: string;
           name: string | null;
