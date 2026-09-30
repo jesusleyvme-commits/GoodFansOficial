@@ -1,10 +1,8 @@
 import { defineConfig } from "vitest/config";
 import { fileURLToPath } from "node:url";
 
-// Configuração separada do `vite.config.ts` de propósito: aquele arquivo é
-// gerido pelo preset do Lovable e o cabeçalho dele pede para não ser alterado.
-// Aqui só entra o que o Vitest precisa — principalmente o alias `@`, que os
-// plugins do preset não alcançam.
+// Configuração separada do `vite.config.ts` de propósito: aquele monta o app e
+// o servidor, e o Vitest só precisa do alias `@` e de onde procurar os testes.
 export default defineConfig({
   resolve: {
     alias: {

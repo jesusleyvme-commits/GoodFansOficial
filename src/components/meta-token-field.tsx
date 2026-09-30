@@ -8,7 +8,6 @@ import { Input } from "@/components/input";
 import { Spinner } from "@/components/spinner";
 import { copyToClipboard } from "@/lib/clipboard";
 import { META_TOKEN_MAX, META_TOKEN_MIN, normalizeMetaToken } from "@/lib/meta-token";
-import { revealModelToken } from "@/lib/model-token.server";
 import { currentAccessToken } from "@/lib/use-auth";
 
 type MetaTokenFieldProps = {
@@ -141,6 +140,12 @@ export function MetaTokenField({
     setFeedback(null);
 
     try {
+      // Import dinâmico, e não no topo do arquivo: este é um componente de
+      // cliente, e um `*.server.ts` importado estaticamente entra no grafo do
+      // navegador. A proteção de `importProtection` recusa isso na build — e
+      // mesmo que alguém franqueasse o padrão, o módulo só entraria no grafo ao
+      // pedir o token, e não ao abrir a página.
+      const { revealModelToken } = await import("@/lib/model-token.server");
       const { token } = await revealModelToken({
         data: { modelId, accessToken: await currentAccessToken() },
       });

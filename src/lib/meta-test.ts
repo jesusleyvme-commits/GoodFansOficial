@@ -4,7 +4,6 @@ import { z } from "zod";
 
 import { buildCapiEvent, type CapiUserData } from "@/lib/meta-event";
 import { readError } from "@/lib/links-api";
-import { clientAsUser } from "@/lib/user-client.server";
 
 const GRAPH = "https://graph.facebook.com/v21.0";
 const TIMEOUT_MS = 15_000;
@@ -177,6 +176,11 @@ export const testLinkPixel = createServerFn({ method: "POST" })
     // Papel `authenticated`, com o JWT de quem está chamando: a RLS já garante
     // que ele só enxerga as próprias linhas, e o token em claro sai pela função
     // SECURITY DEFINER, que repete a checagem de posse com `auth.uid()`.
+    //
+    // O módulo do cliente Supabase entra por `import()` e não no topo do
+    // arquivo: este módulo é alcançável pelo botão, ou seja, faz parte do
+    // grafo do navegador, e um `*.server.ts` importado aqui entraria nele.
+    const { clientAsUser } = await import("@/lib/user-client.server");
     const client = clientAsUser(data.accessToken);
 
     const { data: link, error: linkError } = await client

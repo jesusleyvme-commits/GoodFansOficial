@@ -27,7 +27,6 @@ const IGNORADOS = new Set([
   ".wrangler",
   ".tanstack",
   ".git",
-  ".lovable",
   ".opencode",
 ]);
 

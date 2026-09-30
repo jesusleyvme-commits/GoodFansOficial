@@ -49,7 +49,4 @@ supabase/.env
 # Ferramentas locais de agente
 .agents
 .opencode
-.lovable
-
-.vercel
 
