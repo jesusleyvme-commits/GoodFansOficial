@@ -142,8 +142,8 @@ export function GateSettingsForm({ link, onSaved }: GateSettingsFormProps) {
         <div className="space-y-3">
           <Label>Dados que você quer receber</Label>
           <p className="text-xs leading-relaxed text-muted-foreground">
-            Todo campo ligado aparece no formulário e passa a ser obrigatório. Desligado, ele some da
-            tela e o banco nem recebe o dado.
+            Todo campo ligado aparece no formulário e passa a ser obrigatório. Desligado, ele some
+            da tela e o banco nem recebe o dado.
           </p>
 
           <div className="space-y-2">
@@ -180,9 +180,7 @@ export function GateSettingsForm({ link, onSaved }: GateSettingsFormProps) {
             onChange={(event) => setHeadline(event.target.value)}
             placeholder="Seu acesso está liberado"
           />
-          <p className="text-xs text-muted-foreground">
-            Vazio usa o texto padrão do app.
-          </p>
+          <p className="text-xs text-muted-foreground">Vazio usa o texto padrão do app.</p>
         </div>
 
         <div className="space-y-2">
@@ -208,8 +206,7 @@ export function GateSettingsForm({ link, onSaved }: GateSettingsFormProps) {
           />
           <p className="text-xs leading-relaxed text-muted-foreground">
             Diga o que é coletado, para que, e como pedir a exclusão. Vazio usa o texto padrão do
-            app. Prometer conformidade que o produto não cumpre é problema do produto, não do
-            texto.
+            app. Prometer conformidade que o produto não cumpre é problema do produto, não do texto.
           </p>
         </div>
 

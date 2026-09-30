@@ -204,7 +204,11 @@ export const Route = createFileRoute("/go/$id")({
         const raw = await request.text().catch(() => "");
         if (raw.length > MAX_BODY_BYTES) return noContent();
 
-        if ((request.headers.get("content-type") ?? "").startsWith("application/x-www-form-urlencoded")) {
+        if (
+          (request.headers.get("content-type") ?? "").startsWith(
+            "application/x-www-form-urlencoded",
+          )
+        ) {
           return submitGateForm(params.id, raw);
         }
 

@@ -59,7 +59,6 @@ export const DEFAULT_PRIVACY_NOTE =
 export const DEFAULT_HEADLINE = "Seu acesso está liberado";
 export const DEFAULT_SUBHEAD = "Clique abaixo para entrar.";
 
-
 const ESCAPES: Record<string, string> = {
   "&": "&amp;",
   "<": "&lt;",
@@ -159,7 +158,6 @@ ${beacon}  fbq('track','Purchase'${pixelValueArgs(input.valueEur)},{eventID:${ev
 })();
 </script>`;
 }
-
 
 const CONSENT_LABEL =
   "Autorizo o uso dos meus dados para liberar este acesso e receber novidades sobre o conteúdo.";
@@ -374,7 +372,8 @@ export function renderRedirectPage(data: RedirectPageData): string {
 
   // O gate só existe se ao menos um campo estiver ligado. Sem nenhum, a página
   // é a âncora direta de sempre, que é mais rápida e não tem o que coletar.
-  const gate = data.collectName === true || data.collectEmail === true || data.collectPhone === true;
+  const gate =
+    data.collectName === true || data.collectEmail === true || data.collectPhone === true;
 
   const headline = escapeHtml(data.headline?.trim() || DEFAULT_HEADLINE);
   const subhead = escapeHtml(data.subhead?.trim() || (gate ? "" : DEFAULT_SUBHEAD));
@@ -397,18 +396,19 @@ export function renderRedirectPage(data: RedirectPageData): string {
   // pré-visualização de um link que já tem pixel e ele disparasse, entraria uma
   // conversão real no relatório do anúncio — de um clique que foi só olhar a
   // tela, e para um link que talvez nem exista mais.
-  const conversion = pixelId && !preview
-    ? renderConversionScript({
-        pixelId,
-        valueEur: data.valueEur,
-        eventId: data.eventId,
-        // A mesma rota que serve a página recebe o envio do formulário em
-        // form-urlencoded e o clique em JSON. O POST separa os dois pelo
-        // content-type, então não é preciso uma rota nova.
-        trackUrl: `/go/${escapeAttribute(data.linkId)}`,
-        gate,
-      })
-    : "";
+  const conversion =
+    pixelId && !preview
+      ? renderConversionScript({
+          pixelId,
+          valueEur: data.valueEur,
+          eventId: data.eventId,
+          // A mesma rota que serve a página recebe o envio do formulário em
+          // form-urlencoded e o clique em JSON. O POST separa os dois pelo
+          // content-type, então não é preciso uma rota nova.
+          trackUrl: `/go/${escapeAttribute(data.linkId)}`,
+          gate,
+        })
+      : "";
 
   // Com o gate, a âncora some e o destino não aparece em lugar nenhum do HTML.
   const callToAction = gate

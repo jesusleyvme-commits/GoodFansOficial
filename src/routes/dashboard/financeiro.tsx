@@ -95,8 +95,8 @@ function FinanceiroPage() {
           <div className="flex gap-3 rounded-input border border-amber-500/20 bg-amber-500/[0.05] p-4">
             <Info className="mt-0.5 size-4 shrink-0 text-amber-300" />
             <p className="text-xs leading-relaxed text-amber-100/85">
-              A receita aqui é <strong>conversões × o valor configurado no link</strong>, não o que foi
-              cobrado. Uma compra pode custar menos que esse valor, e a Meta é quem fecha o
+              A receita aqui é <strong>conversões × o valor configurado no link</strong>, não o que
+              foi cobrado. Uma compra pode custar menos que esse valor, e a Meta é quem fecha o
               faturamento. Trate este número como estimativa para decidir o que impulsionar.
             </p>
           </div>
@@ -105,12 +105,24 @@ function FinanceiroPage() {
             <table className="w-full min-w-[46rem] text-sm">
               <thead>
                 <tr className="border-b border-white/[0.06] text-left text-xs uppercase tracking-wide text-muted-foreground">
-                  <th scope="col" className="px-4 py-3 font-medium">Link</th>
-                  <th scope="col" className="px-4 py-3 font-medium">Valor</th>
-                  <th scope="col" className="px-4 py-3 text-right font-medium">Conversões</th>
-                  <th scope="col" className="px-4 py-3 text-right font-medium">Coletas</th>
-                  <th scope="col" className="px-4 py-3 text-right font-medium">Receita est.</th>
-                  <th scope="col" className="px-4 py-3 font-medium">Última</th>
+                  <th scope="col" className="px-4 py-3 font-medium">
+                    Link
+                  </th>
+                  <th scope="col" className="px-4 py-3 font-medium">
+                    Valor
+                  </th>
+                  <th scope="col" className="px-4 py-3 text-right font-medium">
+                    Conversões
+                  </th>
+                  <th scope="col" className="px-4 py-3 text-right font-medium">
+                    Coletas
+                  </th>
+                  <th scope="col" className="px-4 py-3 text-right font-medium">
+                    Receita est.
+                  </th>
+                  <th scope="col" className="px-4 py-3 font-medium">
+                    Última
+                  </th>
                 </tr>
               </thead>
 
@@ -128,7 +140,9 @@ function FinanceiroPage() {
                     <td className="px-4 py-3 text-right tabular-nums">
                       {row.valueEur === null ? "—" : formatEur(row.valueEur * row.conversions)}
                     </td>
-                    <td className="px-4 py-3 text-muted-foreground">{formatDate(row.lastConversionAt)}</td>
+                    <td className="px-4 py-3 text-muted-foreground">
+                      {formatDate(row.lastConversionAt)}
+                    </td>
                   </tr>
                 ))}
               </tbody>
