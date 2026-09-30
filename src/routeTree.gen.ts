@@ -16,6 +16,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
 import { Route as GoIdRouteImport } from './routes/go/$id'
 import { Route as DashboardSettingsRouteImport } from './routes/dashboard/settings'
+import { Route as DashboardModelosRouteImport } from './routes/dashboard/modelos'
 import { Route as DashboardFinanceiroRouteImport } from './routes/dashboard/financeiro'
 import { Route as DashboardAdminRouteImport } from './routes/dashboard/admin'
 import { Route as DashboardPreviewLinkIdRouteImport } from './routes/dashboard/preview/$linkId'
@@ -56,6 +57,11 @@ const DashboardSettingsRoute = DashboardSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardModelosRoute = DashboardModelosRouteImport.update({
+  id: '/modelos',
+  path: '/modelos',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardFinanceiroRoute = DashboardFinanceiroRouteImport.update({
   id: '/financeiro',
   path: '/financeiro',
@@ -84,6 +90,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/dashboard/admin': typeof DashboardAdminRoute
   '/dashboard/financeiro': typeof DashboardFinanceiroRoute
+  '/dashboard/modelos': typeof DashboardModelosRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/go/$id': typeof GoIdRoute
   '/dashboard/': typeof DashboardIndexRoute
@@ -96,6 +103,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/dashboard/admin': typeof DashboardAdminRoute
   '/dashboard/financeiro': typeof DashboardFinanceiroRoute
+  '/dashboard/modelos': typeof DashboardModelosRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/go/$id': typeof GoIdRoute
   '/dashboard': typeof DashboardIndexRoute
@@ -110,6 +118,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/dashboard/admin': typeof DashboardAdminRoute
   '/dashboard/financeiro': typeof DashboardFinanceiroRoute
+  '/dashboard/modelos': typeof DashboardModelosRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/go/$id': typeof GoIdRoute
   '/dashboard/': typeof DashboardIndexRoute
@@ -125,6 +134,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/dashboard/admin'
     | '/dashboard/financeiro'
+    | '/dashboard/modelos'
     | '/dashboard/settings'
     | '/go/$id'
     | '/dashboard/'
@@ -137,6 +147,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/dashboard/admin'
     | '/dashboard/financeiro'
+    | '/dashboard/modelos'
     | '/dashboard/settings'
     | '/go/$id'
     | '/dashboard'
@@ -150,6 +161,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/dashboard/admin'
     | '/dashboard/financeiro'
+    | '/dashboard/modelos'
     | '/dashboard/settings'
     | '/go/$id'
     | '/dashboard/'
@@ -216,6 +228,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardSettingsRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/modelos': {
+      id: '/dashboard/modelos'
+      path: '/modelos'
+      fullPath: '/dashboard/modelos'
+      preLoaderRoute: typeof DashboardModelosRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/financeiro': {
       id: '/dashboard/financeiro'
       path: '/financeiro'
@@ -250,6 +269,7 @@ declare module '@tanstack/react-router' {
 interface DashboardRouteChildren {
   DashboardAdminRoute: typeof DashboardAdminRoute
   DashboardFinanceiroRoute: typeof DashboardFinanceiroRoute
+  DashboardModelosRoute: typeof DashboardModelosRoute
   DashboardSettingsRoute: typeof DashboardSettingsRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
   DashboardModelsModelIdRoute: typeof DashboardModelsModelIdRoute
@@ -259,6 +279,7 @@ interface DashboardRouteChildren {
 const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardAdminRoute: DashboardAdminRoute,
   DashboardFinanceiroRoute: DashboardFinanceiroRoute,
+  DashboardModelosRoute: DashboardModelosRoute,
   DashboardSettingsRoute: DashboardSettingsRoute,
   DashboardIndexRoute: DashboardIndexRoute,
   DashboardModelsModelIdRoute: DashboardModelsModelIdRoute,
