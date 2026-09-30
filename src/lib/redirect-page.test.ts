@@ -392,8 +392,10 @@ describe("renderRedirectPage: preview", () => {
     expect(page({ ...gate, preview: true })).toContain("e.preventDefault()");
   });
 
-  it("mostra o destino real, que é o que o creator quer conferir", () => {
-    expect(page({ ...gate, preview: true })).toContain("https://t.me/+abc");
+  it("leva ao link real, para o creator sair do iframe e conferir de fora", () => {
+    // O submit é bloqueado no preview, então sem esta âncora o creator não tem
+    // como ver a página como o visitante a vê.
+    expect(page({ ...gate, preview: true })).toContain(`href="/go/${LINK_ID}"`);
   });
 
   it("não manda o pixel, para o preview não virar conversão no relatório", () => {
