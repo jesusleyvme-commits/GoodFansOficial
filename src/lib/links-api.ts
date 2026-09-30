@@ -31,6 +31,22 @@ export async function listLinksByModel(modelId: string): Promise<DeliveryLink[]>
   return data ?? [];
 }
 
+/**
+ * Lê um link só. Quem não é o dono não recebe nada: a RLS de `delivery_links`
+ * é por `creator_id`, e `single()` em linha nenhuma vira erro, o que evita
+ * ainda por cima o link existir ou não para o outro.
+ */
+export async function getLink(id: string): Promise<DeliveryLink | null> {
+  const { data, error } = await supabase()
+    .from("delivery_links")
+    .select(LINK_SELECT)
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error) throw new Error(readError(error));
+  return data;
+}
+
 export type NewLinkInput = {
   modelId: string;
   productName: string;
