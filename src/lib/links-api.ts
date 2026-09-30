@@ -32,23 +32,6 @@ export async function listLinksByModel(modelId: string): Promise<DeliveryLink[]>
 }
 
 /**
- * Todos os links do creator, de qualquer modelo.
- *
- * Serve para escolher qual deles usar no preview da página global: a página é
- * uma só, mas o preview precisa de um link real, porque é do link que saem o
- * nome do produto, o destino e a foto da modelo.
- */
-export async function listAllLinks(): Promise<DeliveryLink[]> {
-  const { data, error } = await supabase()
-    .from("delivery_links")
-    .select(LINK_SELECT)
-    .order("created_at", { ascending: false });
-
-  if (error) throw new Error(readError(error));
-  return data ?? [];
-}
-
-/**
  * Lê um link só. Quem não é o dono não recebe nada: a RLS de `delivery_links`
  * é por `creator_id`, e `single()` em linha nenhuma vira erro, o que evita
  * ainda por cima o link existir ou não para o outro.

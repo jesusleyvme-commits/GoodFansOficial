@@ -389,45 +389,6 @@ describe("renderRedirectPage: quem manda o texto do gate", () => {
   });
 });
 
-describe("renderRedirectPage: preview", () => {
-  const gate = { collectName: true, collectEmail: true, collectPhone: true };
-
-  it("avisa que é preview, para ninguém confundir com o link real", () => {
-    expect(page({ ...gate, preview: true })).toContain("Pré-visualização");
-  });
-
-  it("bloqueia o envio no navegador", () => {
-    // Sem isto o creator clica no botão achando que é rascunho e suja a lista
-    // dele com coleta de teste.
-    expect(page({ ...gate, preview: true })).toContain("e.preventDefault()");
-  });
-
-  it("leva ao link real, para o creator sair do iframe e conferir de fora", () => {
-    // O submit é bloqueado no preview, então sem esta âncora o creator não tem
-    // como ver a página como o visitante a vê.
-    expect(page({ ...gate, preview: true })).toContain(`href="/go/${LINK_ID}"`);
-  });
-
-  it("não manda o pixel, para o preview não virar conversão no relatório", () => {
-    const html = page({ ...gate, preview: true, pixelId: "1593499121650270" });
-
-    expect(html).not.toContain("fbevents.js");
-    expect(html).not.toContain("sendBeacon");
-  });
-
-  it("tem o mesmo formulário da versão real", () => {
-    // Se o preview e a página real divergissem, o preview não serviria para
-    // nada. O unico extra é a tarja e o bloqueio de envio.
-    const real = page(gate);
-    const preview = page({ ...gate, preview: true });
-
-    for (const campo of ['name="name"', 'name="email"', 'name="phone"', 'name="consent"']) {
-      expect(preview).toContain(campo);
-      expect(real).toContain(campo);
-    }
-  });
-});
-
 describe("renderUnavailablePage", () => {
   it("não tem pixel nem beacon", () => {
     const html = renderUnavailablePage();
